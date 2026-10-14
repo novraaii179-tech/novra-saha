@@ -24,7 +24,7 @@
 
 <div align="center">
 
-| <a href="https://github.com/keremkursunoglu14-blip"><img src="assets/kerem_kursunoglu.png" width="110px;" style="border-radius:50%;" alt="Kerem Kurşunoğlu"/><br /><sub><b>Kerem Kurşunoğlu</b></sub></a><br />👑 **Kurucu** | <a href="https://github.com/Yasin0234"><img src="https://github.com/Yasin0234.png" width="110px;" style="border-radius:50%;" alt="Muhammed Yasin Korkut"/><br /><sub><b>Muhammed Yasin Korkut</b></sub></a><br />💻 **Yazılım Geliştiricisi** | <a href="https://github.com/jibeymin"><img src="https://github.com/jibeymin.png" width="110px;" style="border-radius:50%;" alt="Beyza Karakaş"/><br /><sub><b>Beyza Karakaş</b></sub></a><br />💻 **Yazılım Geliştiricisi** |
+| <a href="https://github.com/keremkursunoglu14-blip"><img src="assets/kerem_kursunoglu.png" width="110px;" style="border-radius:50%;" alt="Kerem Kurşunoğlu"/><br /><sub><b>Kerem Kurşunoğlu</b></sub></a><br /> **Kurucu** | <a href="https://github.com/Yasin0234"><img src="https://github.com/Yasin0234.png" width="110px;" style="border-radius:50%;" alt="Muhammed Yasin Korkut"/><br /><sub><b>Muhammed Yasin Korkut</b></sub></a><br /> **Yazılım Geliştiricisi** | <a href="https://github.com/jibeymin"><img src="https://github.com/jibeymin.png" width="110px;" style="border-radius:50%;" alt="Beyza Karakaş"/><br /><sub><b>Beyza Karakaş</b></sub></a><br /> **Yazılım Geliştiricisi** |
 | :---: | :---: | :---: |
 | [@keremkursunoglu14-blip](https://github.com/keremkursunoglu14-blip) | [@Yasin0234](https://github.com/Yasin0234) | [@jibeymin](https://github.com/jibeymin) |
 
