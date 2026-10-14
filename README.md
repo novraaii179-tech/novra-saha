@@ -24,9 +24,9 @@
 
 <div align="center">
 
-| <img src="https://ui-avatars.com/api/?name=Kerem+Kursunoglu&background=0D8ABC&color=fff&size=128" width="105px;" alt="Kerem Kurşunoğlu"/><br /><sub><b>Kerem Kurşunoğlu</b></sub><br />👑 **Kurucu** | <a href="https://github.com/Yasin0234"><img src="https://github.com/Yasin0234.png" width="105px;" alt="Muhammed Yasin Korkut"/><br /><sub><b>Muhammed Yasin Korkut</b></sub></a><br />💻 **Yazılım Geliştiricisi** | <a href="https://github.com/jibeymin"><img src="https://github.com/jibeymin.png" width="105px;" alt="Beyza Karakaş"/><br /><sub><b>Beyza Karakaş</b></sub></a><br />💻 **Yazılım Geliştiricisi** |
+| <a href="https://github.com/keremkursunoglu14-blip"><img src="assets/kerem_kursunoglu.png" width="110px;" style="border-radius:50%;" alt="Kerem Kurşunoğlu"/><br /><sub><b>Kerem Kurşunoğlu</b></sub></a><br />👑 **Kurucu** | <a href="https://github.com/Yasin0234"><img src="https://github.com/Yasin0234.png" width="110px;" style="border-radius:50%;" alt="Muhammed Yasin Korkut"/><br /><sub><b>Muhammed Yasin Korkut</b></sub></a><br />💻 **Yazılım Geliştiricisi** | <a href="https://github.com/jibeymin"><img src="https://github.com/jibeymin.png" width="110px;" style="border-radius:50%;" alt="Beyza Karakaş"/><br /><sub><b>Beyza Karakaş</b></sub></a><br />💻 **Yazılım Geliştiricisi** |
 | :---: | :---: | :---: |
-| Kurucu | [@Yasin0234](https://github.com/Yasin0234) | [@jibeymin](https://github.com/jibeymin) |
+| [@keremkursunoglu14-blip](https://github.com/keremkursunoglu14-blip) | [@Yasin0234](https://github.com/Yasin0234) | [@jibeymin](https://github.com/jibeymin) |
 
 </div>
 
@@ -169,5 +169,5 @@ Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.
 > **Önemli Telif Hakkı ve Mülkiyet Maddesi:**  
 > **Projenin tüm telif hakları Kurucu Kerem Kurşunoğlu'nun kuracağı adı 'Novra A.İ.' veya başka bir ad üstüne olacaktır.**
 
-Copyright (c) 2026 **Kerem Kurşunoğlu**, **[Muhammed Yasin Korkut](https://github.com/Yasin0234)**, **[Beyza Karakaş](https://github.com/jibeymin)**.  
+Copyright (c) 2026 **[Kerem Kurşunoğlu](https://github.com/keremkursunoglu14-blip)**, **[Muhammed Yasin Korkut](https://github.com/Yasin0234)**, **[Beyza Karakaş](https://github.com/jibeymin)**.  
 Tüm hakları saklıdır.
