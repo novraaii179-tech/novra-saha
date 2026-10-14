@@ -1,4 +1,4 @@
-name: Novra Saha Botu (Otonom 81 İl Tarama)
+name: Novra Saha Botu (Otonom 81 İl ve Kamu Kurumları)
 
 on:
   # 1. Her 15 dakikada bir otonom rotasyonel tarama
@@ -18,6 +18,22 @@ on:
           - 'hepsi'
           - 'tek_il'
           - 'aralik'
+      kurum_tipi:
+        description: 'Kurum Tipi Filtresi'
+        required: true
+        default: 'hepsi'
+        type: choice
+        options:
+          - 'hepsi'
+          - 'jandarma'
+          - 'emniyet'
+          - 'meb'
+          - 'tarim'
+          - 'saglik'
+          - 'afad'
+          - 'valilik'
+          - 'kaymakamlik'
+          - 'belediye'
       plaka:
         description: 'Taranacak İl Plakası (tek_il modu için örn: 2)'
         required: false
@@ -51,19 +67,21 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
+          KURUM="${{ github.event.inputs.kurum_tipi || 'hepsi' }}"
+          
           if [ "${{ github.event_name }}" = "schedule" ]; then
             echo "Zamanlanmış Rotasyonel Tarama Başlatılıyor..."
-            python saha_bot.py --rotasyon --limit 3 --workers 16
+            python saha_bot.py --rotasyon --kurum-tipi hepsi --limit 3 --workers 16
           elif [ "${{ github.event.inputs.mod }}" = "tek_il" ]; then
-            echo "Tek İl Tarama: Plaka ${{ github.event.inputs.plaka }}"
-            python saha_bot.py --plaka ${{ github.event.inputs.plaka }} --limit 4 --workers 12
+            echo "Tek İl Tarama: Plaka ${{ github.event.inputs.plaka }} (Kurum: $KURUM)"
+            python saha_bot.py --plaka ${{ github.event.inputs.plaka }} --kurum-tipi "$KURUM" --limit 4 --workers 12
           elif [ "${{ github.event.inputs.mod }}" = "aralik" ]; then
-            echo "Plaka Aralığı Tarama: ${{ github.event.inputs.aralik }}"
-            python saha_bot.py --plaka-aralik ${{ github.event.inputs.aralik }} --limit 3 --workers 16
+            echo "Plaka Aralığı Tarama: ${{ github.event.inputs.aralik }} (Kurum: $KURUM)"
+            python saha_bot.py --plaka-aralik ${{ github.event.inputs.aralik }} --kurum-tipi "$KURUM" --limit 3 --workers 16
           elif [ "${{ github.event.inputs.mod }}" = "hepsi" ]; then
-            echo "Tüm 81 İl ve İlçeler Taranıyor..."
-            python saha_bot.py --hepsi --limit 2 --workers 20
+            echo "Tüm 81 İl ve Kurumlar Taranıyor (Kurum: $KURUM)..."
+            python saha_bot.py --hepsi --kurum-tipi "$KURUM" --limit 2 --workers 20
           else
             echo "Varsayılan Rotasyonel Tarama..."
-            python saha_bot.py --rotasyon --limit 3 --workers 16
+            python saha_bot.py --rotasyon --kurum-tipi "$KURUM" --limit 3 --workers 16
           fi

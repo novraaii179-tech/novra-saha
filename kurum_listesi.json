@@ -1,9 +1,9 @@
 {
-  "schema_version": "1.4.0",
+  "schema_version": "1.4.1",
   "proje_adi": "NOVRA SAHA (NOVRA FIELD BOT)",
   "hazirlayan": "Muhammed Yasin KORKUT",
-  "versiyon": "1.4",
-  "aciklama": "Türkiye'deki 81 il ve 922 ilçede bulunan tüm resmi kamu kurumlarının duyuru ve haberlerini izleme motoru.",
+  "versiyon": "1.4.1",
+  "aciklama": "Türkiye'deki 81 il ve 922 ilçede bulunan Valilik, Kaymakamlık, Belediye, Jandarma, Emniyet, MEB, Tarım ve Orman, Sağlık ve AFAD kurumlarının anlık haber takip ve kategorizasyon motoru.",
   "bot_config": {
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 (compatible; NovraSahaBot/1.4; +https://novraai.com)",
     "timeout_saniye": 12,
@@ -11,6 +11,64 @@
     "haber_basina_limit": 4,
     "otomatik_rss_kesfi": true,
     "varsayilan_koleksiyon": "saha_haberleri"
+  },
+  "kategoriler": {
+    "ASAYIS_GUVENLIK": {
+      "kod": "ASAYIS_GUVENLIK",
+      "ad": "Asayiş ve Güvenlik",
+      "anahtar_kelimeler": ["asayis", "polis", "jandarma", "operasyon", "hapis", "tutukla", "uyusturucu", "kacak", "trafik", "huzur", "denetim", "silah", "ele gecirildi", "yakalandi", "suc", "gozalti", "asayis bulteni"]
+    },
+    "EGITIM": {
+      "kod": "EGITIM",
+      "ad": "Eğitim ve Okul",
+      "anahtar_kelimeler": ["okul", "ogrenci", "ogretmen", "meb", "milli egitim", "sinav", "burs", "universite", "egitim", "kutuphane", "derslik", "lgs", "yks", "karne", "tatil", "seminer", "tubitak", "ders"]
+    },
+    "TARIM_HAYVANCILIK": {
+      "kod": "TARIM_HAYVANCILIK",
+      "ad": "Tarım ve Hayvancılık",
+      "anahtar_kelimeler": ["tarim", "ciftci", "hasat", "sulama", "tohum", "hayvancilik", "orman", "mera", "sap", "asi", "destekleme", "uretim", "seracilik", "fidan", "zirai", "gubre", "toprak", "rekolte"]
+    },
+    "SAGLIK": {
+      "kod": "SAGLIK",
+      "ad": "Sağlık ve Tıp",
+      "anahtar_kelimeler": ["hastane", "saglik", "doktor", "asi", "hemsire", "randevu", "tibbi", "tedavi", "poliklinik", "kan bagisi", "mhrs", "acil servis", "ilac", "halk sagligi", "ameliyat", "ambulans"]
+    },
+    "AFET_ACIL": {
+      "kod": "AFET_ACIL",
+      "ad": "Afet ve Acil Durum",
+      "anahtar_kelimeler": ["afad", "deprem", "sel", "firtina", "yangin", "heyelan", "tahliye", "tatbikat", "meteoroloji", "saganak", "uyari", "kar yagisi", "cig", "siren", "kurtarma", "cadir"]
+    },
+    "BELEDIYE_HIZMET": {
+      "kod": "BELEDIYE_HIZMET",
+      "ad": "Belediye ve Şehircilik",
+      "anahtar_kelimeler": ["belediye", "baskan", "asfalt", "park", "bahce", "kaldirim", "altyapi", "su kesintisi", "temizlik", "cop", "imar", "ulasim", "otobus", "meydan", "sosyal yardim", "zabita"]
+    },
+    "RESMI_DUYURU": {
+      "kod": "RESMI_DUYURU",
+      "ad": "Resmi Duyuru ve İlan",
+      "anahtar_kelimeler": ["ihale", "ilan", "duyuru", "askiya", "teblig", "basvuru", "sonuc", "personel alimi", "mulakat", "kamu ilani", "yasaklama", "genel emir"]
+    },
+    "KULTUR_SANAT": {
+      "kod": "KULTUR_SANAT",
+      "ad": "Kültür, Sanat ve Turizm",
+      "anahtar_kelimeler": ["festival", "konser", "tiyatro", "sergi", "senlik", "etkinlik", "kultur", "sanat", "muze", "turizm", "odul", "gosteri", "anma", "kutlama", "yarismasi"]
+    },
+    "GUNCEL": {
+      "kod": "GUNCEL",
+      "ad": "Güncel ve Diğer",
+      "anahtar_kelimeler": []
+    }
+  },
+  "kurum_tipleri": {
+    "VALILIK": { "kod": "VALILIK", "ad": "Valilik", "varsayilan_kategori": "RESMI_DUYURU" },
+    "KAYMAKAMLIK": { "kod": "KAYMAKAMLIK", "ad": "Kaymakamlık", "varsayilan_kategori": "RESMI_DUYURU" },
+    "BELEDIYE": { "kod": "BELEDIYE", "ad": "Belediye", "varsayilan_kategori": "BELEDIYE_HIZMET" },
+    "JANDARMA": { "kod": "JANDARMA", "ad": "İl Jandarma Komutanlığı", "varsayilan_kategori": "ASAYIS_GUVENLIK" },
+    "EMNIYET": { "kod": "EMNIYET", "ad": "İl Emniyet Müdürlüğü", "varsayilan_kategori": "ASAYIS_GUVENLIK" },
+    "MEB": { "kod": "MEB", "ad": "İl/İlçe Milli Eğitim Müdürlüğü", "varsayilan_kategori": "EGITIM" },
+    "TARIM_ORMAN": { "kod": "TARIM_ORMAN", "ad": "İl/İlçe Tarım ve Orman Müdürlüğü", "varsayilan_kategori": "TARIM_HAYVANCILIK" },
+    "SAGLIK": { "kod": "SAGLIK", "ad": "İl Sağlık Müdürlüğü", "varsayilan_kategori": "SAGLIK" },
+    "AFAD": { "kod": "AFAD", "ad": "İl Afet ve Acil Durum Müdürlüğü", "varsayilan_kategori": "AFET_ACIL" }
   },
   "selector_templates": {
     "ISAY_GOV_TR": {
@@ -22,6 +80,51 @@
       "video": "video source[src], iframe[src*='youtube'], iframe[src*='youtu.be'], iframe[src*='vimeo'], a[href$='.mp4']",
       "date": "span.haber-tarih, .tarih, time, .date, span.date"
     },
+    "MEB_GOV_TR": {
+      "aciklama": "Milli Eğitim Bakanlığı Portal Şablonu",
+      "list_container": "div.haber-listesi a, .haberkutu a, a[href*='/haberler/'], a[href*='/haber/'], a[href*='kategori']",
+      "title": "h1, .haber-baslik, .title, #icerik-baslik",
+      "content": "div.haber-icerik, #icerik-alani, #icerik, .icerik-metni, article",
+      "images": "#icerik img, .haber-icerik img, .galeri img, article img",
+      "video": "video source, iframe[src*='youtube'], a[href$='.mp4']",
+      "date": ".tarih, time, span.date"
+    },
+    "TARIM_ORMAN_GOV_TR": {
+      "aciklama": "Tarım ve Orman Bakanlığı Taşra Şablonu",
+      "list_container": ".haber-item a, .news-item a, a[href*='/Haber/'], a[href*='/Duyuru/'], .list-group-item a",
+      "title": "h1, .page-header h1, .haber-title, .detail-title",
+      "content": ".haber-icerik, .detail-content, .news-content, article, #content",
+      "images": ".detail-content img, .haber-icerik img, .gallery img",
+      "video": "video source, iframe[src*='youtube'], a[href$='.mp4']",
+      "date": ".date, .tarih, time"
+    },
+    "SAGLIK_GOV_TR": {
+      "aciklama": "Sağlık Bakanlığı İl Sağlık Müdürlükleri Şablonu",
+      "list_container": ".haberler-listesi a, .news-list a, a[href*='/Haber/'], a[href*='/haber/'], a[href*='/Duyuru/']",
+      "title": "h1, .haber-title, .detay-title",
+      "content": ".haber-metin, .detail-content, article, #icerik",
+      "images": ".haber-metin img, .detail-content img, .gallery-item img",
+      "video": "video source, iframe[src*='youtube']",
+      "date": ".tarih, .date, time"
+    },
+    "AFAD_GOV_TR": {
+      "aciklama": "İçişleri Bakanlığı AFAD İl Müdürlükleri Şablonu",
+      "list_container": ".haber-liste a, .duyuru-liste a, a[href*='/haber/'], a[href*='/duyuru/']",
+      "title": "h1, .haber-baslik, .duyuru-baslik",
+      "content": ".haber-detay, .duyuru-detay, .detail-body, article",
+      "images": ".haber-detay img, .gallery-container img",
+      "video": "video source, iframe[src*='youtube']",
+      "date": ".tarih, time"
+    },
+    "EGM_JANDARMA": {
+      "aciklama": "Emniyet ve Jandarma Güvenlik Bülteni Şablonu",
+      "list_container": ".haber-listesi a, .duyuru-listesi a, a[href*='/haber'], a[href*='/basin-aciklamasi'], a[href*='/asayis']",
+      "title": "h1, .haber-baslik, .basin-baslik",
+      "content": ".haber-icerik, .basin-icerik, article, .detay-icerik",
+      "images": ".haber-icerik img, .detay-icerik img",
+      "video": "video source, iframe[src*='youtube'], a[href$='.mp4']",
+      "date": ".haber-tarih, .tarih, time"
+    },
     "BELEDIYE_STANDART": {
       "aciklama": "Standart Belediye Portalı Şablonu",
       "list_container": "article.post a, .news-card a, .haber-kutu a, .haberler-grid a, .news-item a, a[href*='/haber/'], a[href*='/haberler/']",
@@ -30,15 +133,6 @@
       "images": ".gallery-item a, .post-gallery img, .haber-detay img, .fotorama img, .swiper-slide img, .entry-content img",
       "video": "video source[src], .video-container iframe, iframe[src*='youtube'], a[href$='.mp4']",
       "date": ".post-date, .date, span.tarih, time, .entry-date"
-    },
-    "GENEL_KURUM": {
-      "aciklama": "Genel Kamu Kurumu ve Özel Portal Şablonu",
-      "list_container": ".list a, .news a, .announcements a, .items a, article a",
-      "title": "h1, .title, .header",
-      "content": "article, .detail, .content, main, #main-content",
-      "images": "article img, .content img, .detail img",
-      "video": "video source, iframe[src*='youtube']",
-      "date": "time, .date, .tarih"
     }
   },
   "ozel_kurumlar": [
@@ -71,6 +165,58 @@
     {
       "plaka": 2,
       "il_adi": "Adıyaman",
+      "ilce_adi": "Merkez",
+      "kurum_id": "02_merkez_meb",
+      "kurum_adi": "Adıyaman İl Milli Eğitim Müdürlüğü",
+      "kurum_tipi": "MEB",
+      "base_url": "https://adiyaman.meb.gov.tr",
+      "target_url": "https://adiyaman.meb.gov.tr",
+      "has_rss": false,
+      "rss_url": null,
+      "template_id": "MEB_GOV_TR"
+    },
+    {
+      "plaka": 2,
+      "il_adi": "Adıyaman",
+      "ilce_adi": "Merkez",
+      "kurum_id": "02_merkez_tarim",
+      "kurum_adi": "Adıyaman İl Tarım ve Orman Müdürlüğü",
+      "kurum_tipi": "TARIM_ORMAN",
+      "base_url": "https://adiyaman.tarimorman.gov.tr",
+      "target_url": "https://adiyaman.tarimorman.gov.tr",
+      "has_rss": false,
+      "rss_url": null,
+      "template_id": "TARIM_ORMAN_GOV_TR"
+    },
+    {
+      "plaka": 2,
+      "il_adi": "Adıyaman",
+      "ilce_adi": "Merkez",
+      "kurum_id": "02_merkez_saglik",
+      "kurum_adi": "Adıyaman İl Sağlık Müdürlüğü",
+      "kurum_tipi": "SAGLIK",
+      "base_url": "https://adiyamanism.saglik.gov.tr",
+      "target_url": "https://adiyamanism.saglik.gov.tr",
+      "has_rss": false,
+      "rss_url": null,
+      "template_id": "SAGLIK_GOV_TR"
+    },
+    {
+      "plaka": 2,
+      "il_adi": "Adıyaman",
+      "ilce_adi": "Merkez",
+      "kurum_id": "02_merkez_afad",
+      "kurum_adi": "Adıyaman İl Afet ve Acil Durum Müdürlüğü",
+      "kurum_tipi": "AFAD",
+      "base_url": "https://adiyaman.afad.gov.tr",
+      "target_url": "https://adiyaman.afad.gov.tr",
+      "has_rss": false,
+      "rss_url": null,
+      "template_id": "AFAD_GOV_TR"
+    },
+    {
+      "plaka": 2,
+      "il_adi": "Adıyaman",
       "ilce_adi": "Kâhta",
       "kurum_id": "02_kahta_kaymakamlik",
       "kurum_adi": "Kâhta Kaymakamlığı",
@@ -93,6 +239,19 @@
       "has_rss": false,
       "rss_url": null,
       "template_id": "BELEDIYE_STANDART"
+    },
+    {
+      "plaka": 2,
+      "il_adi": "Adıyaman",
+      "ilce_adi": "Kâhta",
+      "kurum_id": "02_kahta_meb",
+      "kurum_adi": "Kâhta İlçe Milli Eğitim Müdürlüğü",
+      "kurum_tipi": "MEB",
+      "base_url": "https://kahta.meb.gov.tr",
+      "target_url": "https://kahta.meb.gov.tr",
+      "has_rss": false,
+      "rss_url": null,
+      "template_id": "MEB_GOV_TR"
     }
   ]
 }
