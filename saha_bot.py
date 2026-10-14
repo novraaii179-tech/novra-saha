@@ -2,8 +2,10 @@
 ================================================================================
 NOVRA A.İ. - Versiyon 1.4 Kapsamlı Proje
 2. YENİ BOT: NOVRA SAHA (NOVRA FIELD BOT)
-Hazırlayan: Muhammed Yasin KORKUT
-Tarih: 14.10.2026
+Kurucu: Kerem KURŞUNOĞLU
+Yazılım Geliştiricileri: Muhammed Yasin KORKUT, Beyza KARAKAŞ
+Telif Hakkı: Projenin tüm telif hakları Kurucu Kerem Kurşunoğlu'nun kuracağı adı 'Novra A.İ.' veya başka bir ad üstüne olacaktır.
+Tarih: 15.10.2026
 
 KAPSAM:
 - Valilikler & Kaymakamlıklar (İçişleri Bakanlığı İSAY Portalı)

@@ -20,17 +20,18 @@
 
 ---
 
-## 👥 Geliştirici Ekip (Authors & Maintainers)
-
-Bu proje **NOVRA A.İ.** bünyesinde geliştirilmiş olup, tüm fikri mülkiyeti ve yönetim hakları**KEREM KURŞUNOĞLUNA** aittir:
+## 👥 Geliştirici Ekip (Development Team)
 
 <div align="center">
 
-| <a href="https://github.com/Yasin0234"><img src="https://github.com/Yasin0234.png" width="110px;" alt="Muhammed Yasin KORKUT"/><br /><sub><b>Muhammed Yasin KORKUT</b></sub></a><br /> Geliştirici & Baş Mimar | <a href="https://github.com/jibeymin"><img src="https://github.com/jibeymin.png" width="110px;" alt="Beyza KARAKAŞ"/><br /><sub><b>Beyza KARAKAŞ</b></sub></a><br /> Geliştirici & Baş Mimar|
-| :---: | :---: |
-| [@Yasin0234](https://github.com/Yasin0234) | [@jibeymin](https://github.com/jibeymin) |
+| <img src="https://ui-avatars.com/api/?name=Kerem+Kursunoglu&background=0D8ABC&color=fff&size=128" width="105px;" alt="Kerem Kurşunoğlu"/><br /><sub><b>Kerem Kurşunoğlu</b></sub><br />👑 **Kurucu** | <a href="https://github.com/Yasin0234"><img src="https://github.com/Yasin0234.png" width="105px;" alt="Muhammed Yasin Korkut"/><br /><sub><b>Muhammed Yasin Korkut</b></sub></a><br />💻 **Yazılım Geliştiricisi** | <a href="https://github.com/jibeymin"><img src="https://github.com/jibeymin.png" width="105px;" alt="Beyza Karakaş"/><br /><sub><b>Beyza Karakaş</b></sub></a><br />💻 **Yazılım Geliştiricisi** |
+| :---: | :---: | :---: |
+| Kurucu | [@Yasin0234](https://github.com/Yasin0234) | [@jibeymin](https://github.com/jibeymin) |
 
 </div>
+
+> ⚖️ **Mülkiyet ve Telif Hakkı Bildirimi:**  
+> **Projenin tüm telif hakları Kurucu Kerem Kurşunoğlu'nun kuracağı adı 'Novra A.İ.' veya başka bir ad üstüne olacaktır.**
 
 ---
 
@@ -161,8 +162,12 @@ Depo içerisindeki `.github/workflows/novra_saha.yml` workflow'u ile bot tam oto
 
 ---
 
-## 📄 7. Lisans (License)
+## 📄 7. Lisans ve Telif Hakları (License & Copyright)
 
 Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.  
-Copyright (c) 2026 **[Kerem Kurşunoğlu].
+
+> **Önemli Telif Hakkı ve Mülkiyet Maddesi:**  
+> **Projenin tüm telif hakları Kurucu Kerem Kurşunoğlu'nun kuracağı adı 'Novra A.İ.' veya başka bir ad üstüne olacaktır.**
+
+Copyright (c) 2026 **Kerem Kurşunoğlu**, **[Muhammed Yasin Korkut](https://github.com/Yasin0234)**, **[Beyza Karakaş](https://github.com/jibeymin)**.  
 Tüm hakları saklıdır.

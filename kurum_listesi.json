@@ -1,7 +1,9 @@
 {
   "schema_version": "1.4.1",
   "proje_adi": "NOVRA SAHA (NOVRA FIELD BOT)",
-  "hazirlayan": "Muhammed Yasin KORKUT",
+  "kurucu": "Kerem Kurşunoğlu",
+  "yazilim_gelistiricileri": ["Muhammed Yasin Korkut", "Beyza Karakaş"],
+  "telif_hakki": "Projenin tüm telif hakları Kurucu Kerem Kurşunoğlu'nun kuracağı adı 'Novra A.İ.' veya başka bir ad üstüne olacaktır.",
   "versiyon": "1.4.1",
   "aciklama": "Türkiye'deki 81 il ve 922 ilçede bulunan Valilik, Kaymakamlık, Belediye, Jandarma, Emniyet, MEB, Tarım ve Orman, Sağlık ve AFAD kurumlarının anlık haber takip ve kategorizasyon motoru.",
   "bot_config": {
