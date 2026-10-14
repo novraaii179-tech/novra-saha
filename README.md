@@ -164,5 +164,5 @@ Depo içerisindeki `.github/workflows/novra_saha.yml` workflow'u ile bot tam oto
 ## 📄 7. Lisans (License)
 
 Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.  
-Copyright (c) 2026 **[Muhammed Yasin KORKUT](https://github.com/Yasin0234)** & **[Beyza KARAKAŞ](https://github.com/jibeymin)**.
+Copyright (c) 2026 **[Kerem Kurşunoğlu].
 Tüm hakları saklıdır.
