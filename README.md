@@ -22,7 +22,7 @@
 
 ## 👥 Geliştirici Ekip (Authors & Maintainers)
 
-Bu proje **NOVRA A.İ.** bünyesinde geliştirilmiş olup fikri mülkiyeti ve bakımı geliştiricilere aittir:
+Bu proje **NOVRA A.İ.** bünyesinde geliştirilmiş olup, tüm fikri mülkiyeti ve yönetim hakları**KEREM KURŞUNOĞLUNA** aittir:
 
 <div align="center">
 
