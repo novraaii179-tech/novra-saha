@@ -1,6 +1,6 @@
 # 📡 NOVRA SAHA BOTU (NOVRA FIELD BOT)
 **NOVRA A.İ. - Versiyon 1.4 Kapsamlı Proje**  
-**Hazırlayan:** Muhammed Yasin KORKUT  
+**Hazırlayan:** Muhammed Yasin KORKUT ve Beyza KARAKAŞ
 **Tarih:** 14.10.2026
 
 ---
