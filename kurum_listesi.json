@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.4.0",
+  "updated_at": "2026-10-14T13:55:00Z",
+  "bot_config": {
+    "user_agent": "Mozilla/5.0 (compatible; NovraSahaBot/1.4; +https://novraai.com)",
+    "timeout_ms": 15000,
+    "concurrent_workers": 5
+  },
+  "selector_templates": {
+    "ISAY_GOV_TR": {
+      "list_container": "div.haber-listesi a, div.duyuru-listesi a, .news-list .item a",
+      "title": "h1.haber-baslik, h1.page-title, .detay-baslik h1",
+      "content": "div.haber-icerik, div.detay-icerik, #icerik-alani",
+      "images": "div.haber-galeri a[href$=.jpg], div.haber-galeri a[href$=.jpeg], div.haber-icerik img",
+      "video": "video source[src], iframe[src*=youtube], a[href$=.mp4]",
+      "date": "span.haber-tarih, .tarih, time"
+    },
+    "BELEDIYE_STANDART": {
+      "list_container": "article.post a, .news-card a, .haber-kutu a, .haberler-grid .item a",
+      "title": "h1.entry-title, h1.title, h1.detay-baslik",
+      "content": "div.entry-content, div.post-content, .haber-metni, .detay-aciklama",
+      "images": ".gallery-item a, .post-gallery img, .haber-detay img, .fotorama img",
+      "video": "video source[src], .video-container iframe",
+      "date": ".post-date, .date, span.tarih"
+    }
+  },
+  "iller": [
+    {
+      "plaka": 2,
+      "il_adi": "Adıyaman",
+      "ilceler": [
+        {
+          "ilce_id": "02_merkez",
+          "ilce_adi": "Merkez",
+          "kurumlar": [
+            {
+              "kurum_id": "02_merkez_valilik",
+              "kurum_adi": "Adıyaman Valiliği",
+              "kurum_tipi": "VALILIK",
+              "base_url": "http://www.adiyaman.gov.tr",
+              "target_url": "http://www.adiyaman.gov.tr/haberler",
+              "has_rss": false,
+              "rss_url": null,
+              "template_id": "ISAY_GOV_TR",
+              "custom_selectors": null
+            },
+            {
+              "kurum_id": "02_merkez_belediye",
+              "kurum_adi": "Adıyaman Belediyesi",
+              "kurum_tipi": "BELEDIYE",
+              "base_url": "https://www.adiyaman.bel.tr",
+              "target_url": "https://www.adiyaman.bel.tr/haberler",
+              "has_rss": false,
+              "rss_url": null,
+              "template_id": "BELEDIYE_STANDART",
+              "custom_selectors": null
+            }
+          ]
+        },
+        {
+          "ilce_id": "02_kahta",
+          "ilce_adi": "Kâhta",
+          "kurumlar": [
+            {
+              "kurum_id": "02_kahta_kaymakamlik",
+              "kurum_adi": "Kâhta Kaymakamlığı",
+              "kurum_tipi": "KAYMAKAMLIK",
+              "base_url": "http://www.kahta.gov.tr",
+              "target_url": "http://www.kahta.gov.tr/haberler",
+              "has_rss": false,
+              "rss_url": null,
+              "template_id": "ISAY_GOV_TR",
+              "custom_selectors": null
+            },
+            {
+              "kurum_id": "02_kahta_belediye",
+              "kurum_adi": "Kâhta Belediyesi",
+              "kurum_tipi": "BELEDIYE",
+              "base_url": "https://www.kahta.bel.tr",
+              "target_url": "https://www.kahta.bel.tr/haberler",
+              "has_rss": false,
+              "rss_url": null,
+              "template_id": "BELEDIYE_STANDART",
+              "custom_selectors": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
