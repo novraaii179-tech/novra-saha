@@ -55,9 +55,29 @@ flowchart TD
 
 ---
 
-## 🚀 4. Kurulum ve Çalıştırma
+## 🧹 4. Otomatik Temizlik & 2 Günlük TTL (Time To Live) Motoru
+
+Sistemin şişmemesi, Firestore kotasının gereksiz dolmaması ve uygulamanın her zaman en güncel haberleri hızlıca listelemesi için **çift katmanlı 2 günlük otomatik silme mekanizması** entegre edilmiştir:
+
+1. **Bot İçi Otonom Temizlik (`eski_haberleri_temizle`):**
+   - Bot her çalıştığında (zamanlanmış her 15 dakikada bir), `silinmeTarihi <= şu_an` olan (2 günü doldurmuş) eski haberleri Firestore'dan batch delete ile otomatik olarak siler.
+2. **Firestore TTL (Time To Live) Alanı:**
+   - Her habere eklenen `silinmeTarihi` alanı, Firebase Console üzerinden TTL politikası olarak tanımlanabilir. Böylece Google Cloud altyapısı süresi dolan haberleri arka planda otomatik ve ücretsiz olarak temizler.
+
+```json
+{
+  "olusturulmaTarihi": "SERVER_TIMESTAMP",
+  "silinmeTarihi": "2026-10-16T15:10:00Z",
+  "gecerlilikSuresiGun": 2
+}
+```
+
+---
+
+## 🚀 5. Kurulum ve Çalıştırma
 
 ### Bağımlılıkları Yükleme:
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -85,14 +105,21 @@ python saha_bot.py --kurum-tipi tarim
 python saha_bot.py --kurum-tipi saglik
 python saha_bot.py --kurum-tipi afad
 
-# 7. Dry-Run / Test Modu (Firebase yerine yerel 'saha_haberleri_test.json' dosyasına yazar)
+# 7. Sadece Süresi Dolan (2 Günden Eski) Haberleri Temizle:
+python saha_bot.py --sadece-temizle
+
+# 8. Özel Ömür Belirleyerek Tara (Örn: 3 günlük saklama):
+python saha_bot.py --plaka 2 --omur-gun 3
+
+# 9. Dry-Run / Test Modu (Firebase yerine yerel 'saha_haberleri_test.json' dosyasına yazar)
 python saha_bot.py --plaka 2 --dry-run
 ```
 
 ---
 
-## ⚙️ 5. GitHub Actions ile Otonom Çalışma
+## ⚙️ 6. GitHub Actions ile Otonom Çalışma
 `.github/workflows/novra_saha.yml` dosyası yapılandırılmıştır:
-- **Zamanlanmış (Cron):** Her 15 dakikada bir otomatik rotasyon ile tüm kurumları periyodik olarak tarar.
+- **Zamanlanmış (Cron):** Her 15 dakikada bir otomatik rotasyon ile tüm kurumları periyodik olarak tarar ve 2 günü aşan eski haberleri otomatik siler.
 - **Manuel Tetikleme (Workflow Dispatch):** GitHub Actions sekmesinden tek tıkla `mod` (rotasyon, tek_il, hepsi) ve `kurum_tipi` (jandarma, emniyet, meb, tarim, saglik, afad, valilik vb.) seçilerek anlık başlatılabilir.
 - **Gizli Anahtar (Secret):** GitHub Repository Settings -> Secrets and variables -> Actions kısmına `FIREBASE_SERVICE_ACCOUNT` eklenmelidir.
+

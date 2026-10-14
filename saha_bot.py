@@ -703,8 +703,48 @@ def hedefleri_yukle(args) -> tuple[list, dict]:
     return list(benzersiz_hedefler.values()), varsayilan_isay
 
 # ----------------------------------------------------------------------
-# 9. FIREBASE BAĞLANTISI VE YAZIM YÖNETİMİ
+# 9. FIREBASE BAĞLANTISI, YAZIM VE OTOMATİK TEMİZLİK (2 GÜNLÜK TTL)
 # ----------------------------------------------------------------------
+def eski_haberleri_temizle(db_client, omur_gun: int = 2):
+    """
+    Sistemi yormamak ve veritabanını güncel tutmak için
+    2 günü (48 saati) dolduran eski haberleri Firestore'dan otomatik siler.
+    """
+    if db_client is None:
+        print("[TEMİZLİK] Dry-run modu: Yerel testte silme işlemi atlandı.")
+        return
+
+    import datetime
+    from firebase_admin import firestore
+
+    col_ref = db_client.collection(KOLEKSIYON_ADI)
+    su_an = datetime.datetime.now(datetime.timezone.utc)
+    esik_tarih = su_an - datetime.timedelta(days=omur_gun)
+
+    try:
+        # 1. Öncelik: silinmeTarihi alanı geçmiş olanlar
+        eski_docs = list(col_ref.where("silinmeTarihi", "<=", su_an).limit(400).stream())
+        
+        # 2. Alternatif: silinmeTarihi olmayan eski kayıtlar için olusturulmaTarihi kontrolü
+        if not eski_docs:
+            eski_docs = list(col_ref.where("olusturulmaTarihi", "<=", esik_tarih).limit(400).stream())
+
+        if not eski_docs:
+            print("[TEMİZLİK] 2 günden eski temizlenecek haber bulunamadı. Sistem güncel.")
+            return
+
+        silinen_sayisi = 0
+        batch = db_client.batch()
+        for doc in eski_docs:
+            batch.delete(doc.reference)
+            silinen_sayisi += 1
+
+        batch.commit()
+        print(f"🧹 [OTOMATİK TEMİZLİK] 2 günü aşan toplam {silinen_sayisi} eski haber Firestore'dan temizlendi.")
+
+    except Exception as e:
+        print(f"[TEMİZLİK UYARI] Eski haberler temizlenirken hata oluştu: {e}")
+
 def firebase_baglan(dry_run: bool):
     """Firebase Firestore istemcisini başlatır."""
     if dry_run:
@@ -742,19 +782,30 @@ def firebase_baglan(dry_run: bool):
     print("[FIREBASE UYARI] Firebase kimlik bilgisi bulunamadı! Otomatik Dry-Run moduna geçiliyor.")
     return None
 
-def haberleri_kaydet(haberler: list, db_client):
-    """Toplanan haberleri kategorili şekilde Firestore koleksiyonuna yazar."""
+def haberleri_kaydet(haberler: list, db_client, omur_gun: int = 2):
+    """Toplanan haberleri 2 günlük otomatik silinme (TTL) alanlarıyla Firestore'a yazar."""
     if not haberler:
         print("[KAYIT] Kaydedilecek haber bulunamadı.")
         return
 
+    import datetime
+    su_an = datetime.datetime.now(datetime.timezone.utc)
+    silinme_zamani = su_an + datetime.timedelta(days=omur_gun)
+
     if db_client is None:
         test_dosyasi = "saha_haberleri_test.json"
+        zengin_haberler = []
+        for h in haberler:
+            hz = dict(h)
+            hz["olusturulmaZamaniIso"] = su_an.isoformat()
+            hz["silinmeZamaniIso"] = silinme_zamani.isoformat()
+            hz["gecerlilikSuresiGun"] = omur_gun
+            zengin_haberler.append(hz)
+
         with open(test_dosyasi, "w", encoding="utf-8") as f:
-            json.dump(haberler, f, ensure_ascii=False, indent=2)
-        print(f"[YEREL KAYIT] Toplam {len(haberler)} kategorili haber '{test_dosyasi}' dosyasına kaydedildi.")
+            json.dump(zengin_haberler, f, ensure_ascii=False, indent=2)
+        print(f"[YEREL KAYIT] Toplam {len(haberler)} kategorili haber (2 gün ömürlü) '{test_dosyasi}' dosyasına kaydedildi.")
         
-        # Kategori bazlı istatistik yazdır
         istatistik = {}
         for h in haberler:
             k = h.get("kategoriAdi", "Diğer")
@@ -776,12 +827,17 @@ def haberleri_kaydet(haberler: list, db_client):
         for h in grup:
             doc_ref = col_ref.document(h["id"])
             h_firestore = dict(h)
+            # 2 Günlük TTL ve Zaman Etiketleri
             h_firestore["olusturulmaTarihi"] = firestore.SERVER_TIMESTAMP
+            h_firestore["olusturulmaZamaniIso"] = su_an.isoformat()
+            h_firestore["silinmeTarihi"] = silinme_zamani
+            h_firestore["gecerlilikSuresiGun"] = omur_gun
             batch.set(doc_ref, h_firestore, merge=True)
         batch.commit()
         print(f"[FIREBASE BATCH] {min(i + batch_boyutu, toplam)} / {toplam} haber kaydedildi.")
 
-    print(f"[BAŞARILI] Toplam {toplam} kategorili haber Firestore '{KOLEKSIYON_ADI}' koleksiyonuna işlendi.")
+    print(f"[BAŞARILI] Toplam {toplam} haber Firestore '{KOLEKSIYON_ADI}' koleksiyonuna işlendi. (2 Günlük TTL aktif)")
+
 
 # ----------------------------------------------------------------------
 # 10. ANA ÇALIŞTIRICI (MAIN)
@@ -797,18 +853,28 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Firebase yerine yerel JSON çıktısı al")
     parser.add_argument("--limit", type=int, default=3, help="Kurum başına çekilecek haber sayısı (varsayılan: 3)")
     parser.add_argument("--workers", type=int, default=16, help="Paralel worker sayısı (varsayılan: 16)")
+    parser.add_argument("--omur-gun", type=int, default=2, help="Haberlerin veritabanında kalma süresi (gün) - varsayılan: 2")
+    parser.add_argument("--sadece-temizle", action="store_true", help="Tarama yapmadan sadece süresi dolan eski haberleri temizler")
     args = parser.parse_args()
 
     print("=" * 75)
     print("NOVRA SAHA BOTU v1.4.1 BAŞLATILDI")
-    print("Mimar: Muhammed Yasin KORKUT | Koleksiyon: saha_haberleri")
-    print(f"Filtreler -> Plaka: {args.plaka or 'Hepsi'}, Kurum Tipi: {args.kurum_tipi.upper()}")
+    print("Mimar: Muhammed Yasin KORKUT ve Beyza KARAKAŞ | Koleksiyon: saha_haberleri")
+    print(f"Filtreler -> Plaka: {args.plaka or 'Hepsi'}, Kurum Tipi: {args.kurum_tipi.upper()}, Haber Ömrü: {args.omur_gun} Gün")
     print("=" * 75)
 
+    db_client = firebase_baglan(args.dry_run)
+
+    # 1. OTOMATİK ESKİ HABER TEMİZLİĞİ (2 Günü Dolduranları Temizle)
+    eski_haberleri_temizle(db_client, args.omur_gun)
+
+    if args.sadece_temizle:
+        print("[BİTTİ] Sadece temizlik modu tamamlandı.")
+        return
+
+    # 2. HEDEFLERİ YÜKLE VE TARA
     hedefler, varsayilan_seciciler = hedefleri_yukle(args)
     print(f"[HEDEF] Toplam {len(hedefler)} resmi kurum tarama havuzuna alındı.")
-
-    db_client = firebase_baglan(args.dry_run)
 
     toplanan_haberler = []
     print(f"[TARAMA] {args.workers} paralel worker ile kamu kurumları taranıyor...")
@@ -832,7 +898,9 @@ def main():
     print("-" * 75)
     print(f"[TAMAMLANDI] Toplam {len(toplanan_haberler)} resmi haber ve duyuru kategorilendirildi.")
 
-    haberleri_kaydet(toplanan_haberler, db_client)
+    # 3. HABERLERİ 2 GÜNLÜK TTL İLE FIREBASE'E YAZ
+    haberleri_kaydet(toplanan_haberler, db_client, args.omur_gun)
 
 if __name__ == "__main__":
     main()
+

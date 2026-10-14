@@ -1,11 +1,13 @@
 {
   "sistem_durumu": "AKTIF",
-  "son_guncelleme": "14.10.2026 13:55",
+  "son_guncelleme": "14.10.2026 15:10",
   "saha_botu": {
-    "bot_adi": "Novra Saha Botu v1.4",
+    "bot_adi": "Novra Saha Botu v1.4.1",
     "aktif_mi": true,
     "firebase_koleksiyon_adi": "saha_haberleri",
     "tarama_sikligi_dakika": 15,
+    "haber_omru_gun": 2,
+    "otomatik_temizlik": true,
     "otomatik_bildirim": true
   },
   "twitter_botu": {
