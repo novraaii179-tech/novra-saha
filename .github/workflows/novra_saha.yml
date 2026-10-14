@@ -1,0 +1,32 @@
+name: Novra Saha Botu (Otonom 81 İl Tarama)
+
+on:
+  # 1. Her 15 dakikada bir otomatik çalışır
+  schedule:
+    - cron: '*/15 * * * *'
+  
+  # 2. İstediğin an GitHub'dan tek tuşla manuel başlatabilmen için
+  workflow_dispatch:
+
+jobs:
+  saha-tarama-isi:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Depo Dosyalarını Çek
+        uses: actions/checkout@v4
+
+      - name: Python Kurulumu
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Gerekli Kütüphaneleri Yükle (JSoup/BS4, RSS, Firebase)
+        run: |
+          pip install requests beautifulsoup4 feedparser firebase-admin urllib3
+
+      - name: Novra Saha Botunu Çalıştır ve Firebase'e Yaz
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          python saha_bot.py
