@@ -26,7 +26,7 @@ Bu proje **NOVRA A.İ.** bünyesinde geliştirilmiş olup fikri mülkiyeti ve ba
 
 <div align="center">
 
-| <a href="https://github.com/Yasin0234"><img src="https://github.com/Yasin0234.png" width="110px;" alt="Muhammed Yasin KORKUT"/><br /><sub><b>Muhammed Yasin KORKUT</b></sub></a><br />🚀 Kurucu & Baş Mimar | <a href="https://github.com/jibeymin"><img src="https://github.com/jibeymin.png" width="110px;" alt="Beyza KARAKAŞ"/><br /><sub><b>Beyza KARAKAŞ</b></sub></a><br />💡 Araştırmacı & Geliştirici |
+| <a href="https://github.com/Yasin0234"><img src="https://github.com/Yasin0234.png" width="110px;" alt="Muhammed Yasin KORKUT"/><br /><sub><b>Muhammed Yasin KORKUT</b></sub></a><br />🚀 Kurucu & Baş Mimar | <a href="https://github.com/jibeymin"><img src="https://github.com/jibeymin.png" width="110px;" alt="Beyza KARAKAŞ"/><br /><sub><b>Beyza KARAKAŞ</b></sub></a><br />💡 Kurucu & Baş Mimar|
 | :---: | :---: |
 | [@Yasin0234](https://github.com/Yasin0234) | [@jibeymin](https://github.com/jibeymin) |
 
