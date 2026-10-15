@@ -169,5 +169,5 @@ Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.
 > **Önemli Telif Hakkı ve Mülkiyet Maddesi:**  
 > **Projenin tüm telif hakları Kurucu Kerem Kurşunoğlu'nun kuracağı adı 'Novra A.İ.' veya başka bir ad üstüne olacaktır.**
 
-Copyright (c) 2026 **[Kerem Kurşunoğlu](https://github.com/keremkursunoglu14-blip)**, **[Muhammed Yasin Korkut](https://github.com/Yasin0234)**, **[Beyza Karakaş](https://github.com/jibeymin)**.  
+Copyright (c) 2026 **[Kerem Kurşunoğlu](https://github.com/keremkursunoglu14-blip)**,  
 Tüm hakları saklıdır.
