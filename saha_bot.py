@@ -57,8 +57,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # 1. TEMEL YAPILANDIRMA & YARDIMCI TANIMLAR
 # ----------------------------------------------------------------------
 DEFAULT_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 (compatible; NovraSahaBot/1.4; +https://novraai.com)",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
     "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7"
 }
 
@@ -160,7 +160,6 @@ def kategori_ve_kurum_belirle(baslik: str, icerik: str, kurum_tipi: str) -> tupl
     # 2. Kurum tipine göre varsayılan eşleme
     if kurum_tipi in KURUM_TIPI_TANIMLARI:
         varsayilan_ad, varsayilan_kat = KURUM_TIPI_TANIMLARI[kurum_tipi]
-        # Eğer özel anahtar kelime eşleşmesi varsa onu al, yoksa varsayılan
         for kat_kodu, kat_bilgi in KATEGORI_TANIMLARI.items():
             if kat_kodu == "GUNCEL":
                 continue
@@ -185,19 +184,64 @@ def kategori_ve_kurum_belirle(baslik: str, icerik: str, kurum_tipi: str) -> tupl
 ENGEL_GORSEL_KELIMELER = [
     "logo", "icon", "armasi", "arma", "bayrak", "avatar", "banner",
     "facebook", "twitter", "instagram", "youtube", "linkedin", "whatsapp",
-    "footer", "header", ".svg", "reklam", "spacer", "pixel", "captcha"
+    "footer", "header", ".svg", "reklam", "spacer", "pixel", "captcha",
+    "favicon", "simge", "ataturk", "cimer", "edevlet", "cumhurbaskanligi",
+    "bakanlik_yeni", "mansetresim", "paylasim.jpg", "yks-kurs", "kurumsal/",
+    "tasarim/", "webfiles/logolar", "images/projeler/", "fontbuyut",
+    "fontkucult", "fontnormal", "yazdir"
 ]
+
+ENGEL_LINK_KELIMELER = [
+    "iletisim", "kurumsal", "hakkimizda", "tarihce", "mevzuat", "teskilat",
+    "misyon", "vizyon", "rehber", "eczaneler", "organizasyon", "etik-",
+    "ic-kontrol", "arabuluculuk", "zimmet", "bordro", "lbys", "hekimim",
+    "randevu", "laboratuvar", "rapor-sonuclari", "nasil-giderim", "yonetim",
+    "muduru", "baskanlar", "vali", "kaymakam", "sube-mudurlugu", "mudurlugu",
+    "birimi", "vezn", "tahsilat", "ebelediye", "meclis", "muhtar", "kvkk",
+    "hesap-verilebilirlik", "nikah", "vergi", "otobus", "mezbahane", "halk-ekmek",
+    "bize-ulasin", "beyaz-masa", "ekspertiz", "yapi-denetim", "taziye",
+    "sosyal-market", "kentrehberi", "arsiv.aspx", "haberarsivi", "/menu/",
+    "/kategori/", "/haberler", "/duyurular", "/ihaleler", "guncel-haberler",
+    "etkinlikler", "projelerimiz", "devam-edenler", "planlanan-projeler",
+    "tamamlanmis-projeler", "birimler", "gelir", "kadin-aile", "afet_isleri",
+    "sosyal-yardim", "ozel-kalem", "basin-yayin", "bilgi-islem", "fen-isleri",
+    "kultur-sosyal", "su-kanalizasyon", "temizlik-isleri", "imar-sehircilik",
+    "zabita", "itfaiye", "mali-hizmetler", "mezarliklar", "park-bahceler",
+    "ruhsat-denetleme", "ulasim-hizmetleri", "veteriner", "yazi-isleri",
+    "yapi-kontrol", "strateji-gelistirme", "planlama", "hal-isleri",
+    "iklim-degisikligi", "insan-kaynaklari", "destek-hizmetler", "hukuk-isleri"
+]
+
+def style_icinden_url_ayikla(style_str: str) -> str:
+    """CSS style='background-image:url(...)' içinden görsel URL'sini ayıklar."""
+    if not style_str:
+        return ""
+    eslesme = re.search(r"url\(\s*['\"]?([^'\")\s]+)['\"]?\s*\)", style_str, flags=re.IGNORECASE)
+    return eslesme.group(1).strip() if eslesme else ""
 
 def gorsel_kalitesini_artir(raw_url: str, base_url: str) -> str:
     """Küçük boyutlu önizlemeleri yüksek çözünürlüklü orijinal görsellere yükseltir."""
     if not raw_url:
         return ""
     
-    tam_url = urljoin(base_url, raw_url.strip())
+    temiz_raw = html.unescape(raw_url.strip())
+    if temiz_raw.startswith(("data:", "javascript:", "mailto:", "tel:", "#")):
+        return ""
+
+    # CSS url(...) sarmalayıcısı varsa ayıkla
+    if "url(" in temiz_raw.lower():
+        temiz_raw = style_icinden_url_ayikla(temiz_raw)
+        if not temiz_raw:
+            return ""
+
+    tam_url = urljoin(base_url, temiz_raw)
     low = tam_url.lower()
 
     if any(k in low for k in ENGEL_GORSEL_KELIMELER):
         return ""
+
+    # Sağlık Bakanlığı dosyaism.saglik.gov.tr/Resim/.../1/... küçük resmini /0/ (orijinal) yap
+    tam_url = re.sub(r"(/Resim/\d+)/1/", r"\1/0/", tam_url)
 
     # /kucuk/ -> /buyuk/
     tam_url = re.sub(r"/(?:kucuk|thumb|thumbnail|min)/", "/buyuk/", tam_url, flags=re.IGNORECASE)
@@ -205,55 +249,228 @@ def gorsel_kalitesini_artir(raw_url: str, base_url: str) -> str:
     # _thumb, _kucuk uzantılarını temizle
     tam_url = re.sub(r"[_-](?:thumb|thumbnail|kucuk|min|k)\.(jpg|jpeg|png|webp)", r".\1", tam_url, flags=re.IGNORECASE)
 
-    # Query string'deki küçültme parametrelerini temizle
+    # Query string'deki küçültme parametrelerini temizle (ISAY ?mode=resize&width=800, Tarım ?RenditionID=2 vb.)
     parsed = urlparse(tam_url)
     if parsed.query:
         qs = parse_qs(parsed.query)
-        filtrelenmis_qs = {k: v for k, v in qs.items() if k.lower() not in ["w", "h", "width", "height", "resize", "quality", "fit"]}
+        silinecek_parametreler = {"w", "h", "width", "height", "resize", "quality", "fit", "mode", "renditionid"}
+        filtrelenmis_qs = {k: v for k, v in qs.items() if k.lower() not in silinecek_parametreler}
         yeni_query = "&".join(f"{k}={v[0]}" for k, v in filtrelenmis_qs.items())
         tam_url = parsed._replace(query=yeni_query).geturl()
 
     return tam_url
 
-def video_ayikla(soup: BeautifulSoup, base_url: str) -> str:
-    """HTML içinden video kaynaklarını (HTML5 video, YouTube, Vimeo, MP4) ayıklar."""
-    # HTML5 Video
-    for v in soup.find_all("video"):
-        src = v.get("src")
-        if src:
-            return urljoin(base_url, src)
-        for s in v.find_all("source"):
-            s_src = s.get("src")
-            if s_src:
-                return urljoin(base_url, s_src)
+def eleman_gorsellerini_cikar(el, sayfa_url: str) -> list[str]:
+    """Bir HTML elemanından (img, a, div[style] vb.) olası tüm görsel URL'lerini çıkarır."""
+    adaylar = []
+    if el.name == "a":
+        href = el.get("href") or ""
+        if re.search(r"\.(?:jpg|jpeg|png|webp)(?:\?.*)?$", href, flags=re.IGNORECASE) or el.has_attr("data-fancybox") or "/Resim/" in href:
+            adaylar.append(href)
+        for ic_img in el.find_all("img"):
+            for attr in ("data-src", "data-original", "data-lazy-src", "src"):
+                if ic_img.get(attr):
+                    adaylar.append(ic_img.get(attr))
+    elif el.name == "img":
+        # Önce yüksek çözünürlüklü data-src, sonra src
+        for attr in ("data-src", "data-original", "data-lazy-src", "src", "srcset"):
+            val = el.get(attr)
+            if val:
+                if attr == "srcset":
+                    val = val.split(",")[0].strip().split(" ")[0]
+                adaylar.append(val)
+    else:
+        if el.get("data-background"):
+            adaylar.append(el.get("data-background"))
+        if el.get("style") and "url(" in el.get("style", "").lower():
+            adaylar.append(style_icinden_url_ayikla(el.get("style")))
 
-    # iframe Video (YouTube, Vimeo)
-    for iframe in soup.find_all("iframe"):
-        src = iframe.get("src") or iframe.get("data-src")
+    sonuclar = []
+    for raw in adaylar:
+        g = gorsel_kalitesini_artir(raw, sayfa_url)
+        if g and g not in sonuclar:
+            sonuclar.append(g)
+    return sonuclar
+
+def kart_kapak_gorseli_bul(a_etiketi, sayfa_url: str) -> str:
+    """Haber listesi sayfasındaki kart/link elemanından kapak görselini veya arkaplan resmini yakalar."""
+    search_roots = [a_etiketi]
+    if a_etiketi.parent:
+        search_roots.append(a_etiketi.parent)
+        if a_etiketi.parent.parent:
+            search_roots.append(a_etiketi.parent.parent)
+
+    for root in search_roots:
+        for img in root.find_all("img"):
+            g_list = eleman_gorsellerini_cikar(img, sayfa_url)
+            if g_list:
+                return g_list[0]
+        for st_el in root.find_all(style=True):
+            u = style_icinden_url_ayikla(st_el.get("style", ""))
+            if u:
+                g = gorsel_kalitesini_artir(u, sayfa_url)
+                if g:
+                    return g
+    return ""
+
+def video_url_normallestir(raw_video_url: str, base_url: str) -> str:
+    """Bulunan video URL'sini temiz ve oynatılabilir tam URL formatına dönüştürür."""
+    if not raw_video_url:
+        return None
+    v_url = html.unescape(raw_video_url.strip())
+    if v_url.startswith(("javascript:", "mailto:", "#")):
+        return None
+    v_url = urljoin(base_url, v_url)
+    low = v_url.lower()
+
+    if "youtube.com" in low or "youtu.be" in low:
+        if "/embed/" in v_url:
+            yt_id = v_url.split("/embed/")[1].split("?")[0].split("&")[0].strip("/")
+            if yt_id:
+                return f"https://www.youtube.com/watch?v={yt_id}"
+        elif "youtu.be/" in v_url:
+            yt_id = v_url.split("youtu.be/")[1].split("?")[0].split("&")[0].strip("/")
+            if yt_id:
+                return f"https://www.youtube.com/watch?v={yt_id}"
+        return v_url
+
+    if any(k in low for k in ["vimeo.com", "dailymotion.com", ".mp4", ".webm", ".mov", ".m4v", ".m3u8"]):
+        return v_url
+
+    return v_url
+
+def video_ayikla(soup: BeautifulSoup, base_url: str) -> str:
+    """HTML içinden video kaynaklarını (HTML5 video, YouTube, Vimeo, Dailymotion, Meta, MP4) ayıklar."""
+    # 1. HTML5 Video & Source etiketleri
+    for v in soup.find_all("video"):
+        for attr in ("src", "data-src"):
+            if v.get(attr):
+                norm = video_url_normallestir(v.get(attr), base_url)
+                if norm:
+                    return norm
+        for s in v.find_all("source"):
+            for attr in ("src", "data-src"):
+                if s.get(attr):
+                    norm = video_url_normallestir(s.get(attr), base_url)
+                    if norm:
+                        return norm
+
+    # 2. iframe / embed Video (YouTube, Vimeo, Dailymotion, Sosyal Medya Video)
+    for iframe in soup.find_all(["iframe", "embed", "object"]):
+        src = iframe.get("src") or iframe.get("data-src") or iframe.get("data-lazy-src") or iframe.get("data")
         if not src:
             continue
         low = src.lower()
-        if "youtube.com" in low or "youtu.be" in low:
-            if "embed/" in src:
-                yt_id = src.split("embed/")[1].split("?")[0]
-                return f"https://www.youtube.com/watch?v={yt_id}"
-            return src
-        if "vimeo.com" in low:
-            return src
+        if any(k in low for k in ["youtube.com", "youtu.be", "vimeo.com", "dailymotion.com", "player.", "/video", ".mp4", ".m3u8"]):
+            norm = video_url_normallestir(src, base_url)
+            if norm:
+                return norm
 
-    # Doğrudan Video Linkleri
-    for a in soup.find_all("a", href=True):
-        href = a["href"].lower()
-        if href.endswith((".mp4", ".webm", ".mov", ".m4v")):
-            return urljoin(base_url, a["href"])
+    # 3. OpenGraph / Twitter Video Meta Etiketleri
+    for meta in soup.find_all("meta", attrs={"property": re.compile(r"og:video|twitter:player", re.I)}):
+        content = meta.get("content")
+        if content:
+            norm = video_url_normallestir(content, base_url)
+            if norm:
+                return norm
+
+    # 4. Doğrudan Video Linkleri veya data-video / onclick özellikleri
+    for a in soup.find_all(["a", "div", "span"]):
+        for attr in ("href", "data-video", "data-src", "data-url"):
+            val = a.get(attr)
+            if val and re.search(r"\.(?:mp4|webm|mov|m4v|m3u8)(?:\?.*)?$", val, flags=re.IGNORECASE):
+                norm = video_url_normallestir(val, base_url)
+                if norm:
+                    return norm
+
+    # 5. Script veya sayfa içi gömülü MP4 / YouTube Embed araması (Fallback)
+    html_str = str(soup)
+    yt_match = re.search(r"https?://(?:www\.)?youtube\.com/embed/([a-zA-Z0-9_-]{6,})", html_str)
+    if yt_match:
+        return f"https://www.youtube.com/watch?v={yt_match.group(1)}"
+
+    mp4_match = re.search(r"(['\"])((?:https?:)?//[^'\"]+?\.mp4(?:\?[^'\"]*)?|/[^'\"]+?\.mp4(?:\?[^'\"]*)?)\1", html_str, flags=re.IGNORECASE)
+    if mp4_match:
+        aday_mp4 = mp4_match.group(2)
+        if "popup" not in aday_mp4.lower():
+            return video_url_normallestir(aday_mp4, base_url)
 
     return None
+
+def youtube_kapak_resmi_uret(video_url: str) -> str:
+    """Haberde görsel yoksa ancak YouTube videosu varsa yüksek çözünürlüklü video kapağını döndürür."""
+    if not video_url:
+        return None
+    eslesme = re.search(r"(?:v=|/embed/|youtu\.be/)([a-zA-Z0-9_-]{6,})", video_url)
+    if eslesme:
+        return f"https://img.youtube.com/vi/{eslesme.group(1)}/hqdefault.jpg"
+    return None
+
+def sayfa_gorsellerini_topla(d_soup: BeautifulSoup, seciciler: dict, sayfa_url: str, liste_kapak: str = "") -> list[str]:
+    """
+    Detay sayfasından (ve gerekirse liste kartından) haberle ilgili tüm yüksek çözünürlüklü görselleri toplar.
+    """
+    gorseller = []
+
+    # 1. Seçici şablonundaki özel görsel/galeri alanlarını tara
+    img_secici = seciciler.get("images", "img")
+    for el in d_soup.select(img_secici):
+        # Son haberler / benzer haberler widget'ları içindeki resimleri hariç tut
+        el_id = (el.get("id") or "").lower()
+        if "sonhaberler" in el_id or "benzer" in el_id:
+            continue
+        for g in eleman_gorsellerini_cikar(el, sayfa_url):
+            if g not in gorseller:
+                gorseller.append(g)
+
+    # 2. Genel galeri ve içerik kapsayıcılarını tara (ISAY, MEB, Tarım, Sağlık, AFAD, Belediye ortak yapıları)
+    ek_seciciler = (
+        ".swiper-gallery img, .zgLarge a[data-fancybox], .zgLarge img, "
+        ".adasoftPhotoBox a, .adasoftPhotoBox img, .fgaleri img, .ortala img, "
+        ".content-image img, .article-detay a[data-fancybox], .article-detay img, "
+        ".itemBody img, .gallery-image, .hbrImg, .icerik img, .detail-content-container img"
+    )
+    for el in d_soup.select(ek_seciciler):
+        el_id = (el.get("id") or "").lower()
+        if "sonhaberler" in el_id or "benzer" in el_id:
+            continue
+        for g in eleman_gorsellerini_cikar(el, sayfa_url):
+            if g not in gorseller:
+                gorseller.append(g)
+
+    # 3. Liste sayfasındaki kartta yakalanan kapak görselini dahil et
+    if liste_kapak:
+        if liste_kapak not in gorseller:
+            # Eğer detayda hiç görsel bulunamadıysa veya kapak resmi olarak en başa eklenmesi gerekiyorsa
+            gorseller.insert(0, liste_kapak)
+
+    # 4. Hâlâ görsel bulunamadıysa OpenGraph / Twitter Image meta etiketlerine bak
+    if not gorseller:
+        for meta in d_soup.find_all("meta", attrs={"property": re.compile(r"og:image|twitter:image", re.I)}):
+            m_url = meta.get("content")
+            if m_url:
+                g = gorsel_kalitesini_artir(m_url, sayfa_url)
+                if g and g not in gorseller:
+                    gorseller.append(g)
+
+    # Aynı görselin farklı varyasyonlarını (örn: küçük/büyük veya tekrar eden dosya yollarını) tekilleştir
+    benzersiz_gorseller = []
+    gorulen_yollar = set()
+    for g in gorseller:
+        parsed_g = urlparse(g)
+        anahtar = parsed_g.netloc.lower() + parsed_g.path.lower()
+        if anahtar not in gorulen_yollar:
+            gorulen_yollar.add(anahtar)
+            benzersiz_gorseller.append(g)
+
+    return benzersiz_gorseller[:10]
 
 def metin_temizle(ham_metin: str) -> str:
     """HTML etiketlerinden ve gereksiz boşluklardan arındırılmış temiz metin üretir."""
     if not ham_metin:
         return ""
     metin = html.unescape(ham_metin)
+    metin = metin.replace("\xa0", " ").replace("Â", "")
     metin = re.sub(r"\s+", " ", metin)
     return metin.strip()
 
@@ -264,6 +481,11 @@ def rss_var_mi(hedef: dict, session: requests.Session) -> tuple[bool, str]:
     """Resmi kurum web sitesinde RSS beslemesi olup olmadığını otomatik tespit eder."""
     if hedef.get("has_rss") and hedef.get("rss_url"):
         return True, hedef["rss_url"]
+
+    # MEB sitelerinin RSS beslemelerinde gerçek haber görseli yerine sabit 'mansetresim.png' bulunduğu için
+    # MEB kurumlarında doğrudan zengin HTML Scraper motorunu kullanmak görsel/video kaydını garanti eder.
+    if hedef.get("kurum_tipi") == "MEB":
+        return False, None
 
     base = hedef["base_url"].rstrip("/")
     aday_yollar = [
@@ -284,7 +506,9 @@ def rss_var_mi(hedef: dict, session: requests.Session) -> tuple[bool, str]:
                 t = (link.get("type") or "").lower()
                 href = link.get("href")
                 if ("rss" in t or "xml" in t or "atom" in t) and href:
-                    return True, urljoin(base, href)
+                    tam_rss = urljoin(base, href)
+                    if "mansetresim" not in tam_rss and "meb_iys_dosyalar/xml/rss" not in tam_rss:
+                        return True, tam_rss
     except Exception:
         pass
 
@@ -301,13 +525,19 @@ def rss_var_mi(hedef: dict, session: requests.Session) -> tuple[bool, str]:
     return False, None
 
 # ----------------------------------------------------------------------
-# 5. [ RssService Engine ] (XML Parser & Media)
+# 5. [ RssService Engine ] (XML Parser & Media + Detay Sayfası Zenginleştirme)
 # ----------------------------------------------------------------------
-def rss_servis_tara(hedef: dict, rss_url: str, limit: int = 4) -> list:
+def rss_servis_tara(hedef: dict, rss_url: str, seciciler: dict = None, session: requests.Session = None, limit: int = 4) -> list:
     """[RSS Var mı? -> Evet] RssService Engine: XML ayrıştırma ve zengin medya çıkarma."""
     haberler = []
+    seciciler = seciciler or {}
     try:
-        feed = feedparser.parse(rss_url)
+        if session is not None:
+            resp = session.get(rss_url, headers=DEFAULT_HEADERS, timeout=10, verify=False)
+            feed = feedparser.parse(resp.content)
+        else:
+            feed = feedparser.parse(rss_url, request_headers=DEFAULT_HEADERS)
+
         for entry in feed.entries[:limit]:
             link = entry.get("link", "").strip()
             baslik = metin_temizle(entry.get("title", ""))
@@ -323,35 +553,64 @@ def rss_servis_tara(hedef: dict, rss_url: str, limit: int = 4) -> list:
             if len(icerik_metin) < 15:
                 icerik_metin = baslik
 
-            # Medya Ayrıştırma: Görseller
+            # Medya Ayrıştırma: Görseller (Enclosures + media:content + media:thumbnail + img)
             gorseller = []
             for enc in entry.get("enclosures", []):
                 href = enc.get("href") or enc.get("url")
-                if href and enc.get("type", "").startswith("image/"):
-                    g = gorsel_kalitesini_artir(href, hedef["base_url"])
+                if href and (enc.get("type", "").startswith("image/") or re.search(r"\.(?:jpg|jpeg|png|webp)", href, re.I)):
+                    g = gorsel_kalitesini_artir(href, link)
+                    if g:
+                        gorseller.append(g)
+
+            for m_item in entry.get("media_content", []) + entry.get("media_thumbnail", []):
+                m_url = m_item.get("url")
+                if m_url:
+                    g = gorsel_kalitesini_artir(m_url, link)
                     if g:
                         gorseller.append(g)
 
             for img in soup.find_all("img"):
-                src = img.get("src") or img.get("data-src")
-                if src:
-                    g = gorsel_kalitesini_artir(src, hedef["base_url"])
-                    if g:
-                        gorseller.append(g)
+                for g in eleman_gorsellerini_cikar(img, link):
+                    gorseller.append(g)
 
             # Video Ayrıştırma
             video_url = None
             for enc in entry.get("enclosures", []):
                 href = enc.get("href") or enc.get("url")
-                if href and enc.get("type", "").startswith("video/"):
-                    video_url = href
+                if href and (enc.get("type", "").startswith("video/") or re.search(r"\.(?:mp4|webm|mov|m3u8)", href, re.I)):
+                    video_url = video_url_normallestir(href, link)
                     break
             if not video_url:
-                video_url = video_ayikla(soup, hedef["base_url"])
+                video_url = video_ayikla(soup, link)
+
+            # Eğer RSS içinde görsel veya video eksikse, haberin detay sayfasına gidip medyayı tamamla
+            if (not gorseller or not video_url) and session is not None:
+                try:
+                    d_resp = session.get(link, headers=DEFAULT_HEADERS, timeout=10, verify=False)
+                    if d_resp.status_code == 200:
+                        d_soup = BeautifulSoup(d_resp.text, "html.parser")
+                        detay_url_gercek = d_resp.url or link
+                        if not gorseller:
+                            gorseller = sayfa_gorsellerini_topla(d_soup, seciciler, detay_url_gercek)
+                        if not video_url:
+                            video_url = video_ayikla(d_soup, detay_url_gercek)
+                        if len(icerik_metin) < 80:
+                            icerik_el = d_soup.select_one(seciciler.get("content", "article, .icerik, .haber-icerik"))
+                            if icerik_el:
+                                tam_metin = metin_temizle(icerik_el.get_text(separator=" ", strip=True))
+                                if len(tam_metin) > len(icerik_metin):
+                                    icerik_metin = tam_metin
+                except Exception:
+                    pass
+
+            if not gorseller and video_url:
+                yt_kapak = youtube_kapak_resmi_uret(video_url)
+                if yt_kapak:
+                    gorseller.append(yt_kapak)
 
             yayin_tarihi = entry.get("published", "") or entry.get("updated", "")
             temiz_gorseller = list(dict.fromkeys(gorseller))[:10]
-            kapak_gorseli = temiz_gorseller[0] if temiz_gorseller else None
+            kapak_gorseli = temiz_gorseller[0] if temiz_gorseller else ""
             haber_id = id_uret(link)
 
             # Kategori ve Kurum Analizi
@@ -371,8 +630,12 @@ def rss_servis_tara(hedef: dict, rss_url: str, limit: int = 4) -> list:
                 "kurumTipiAdi": kt_ad,
                 "kaynakMotor": "RSS",
                 "gorselUrls": temiz_gorseller,
+                "gorselUrl": kapak_gorseli,
                 "kapakGorseli": kapak_gorseli,
-                "videoUrl": video_url,
+                "resimUrl": kapak_gorseli,
+                "videoUrl": video_url or "",
+                "videoUrls": [video_url] if video_url else [],
+                "medyaVarMi": bool(temiz_gorseller or video_url),
                 "kaynakUrl": link,
                 "yayinTarihiMetin": yayin_tarihi,
                 "kategori": kat_kod,
@@ -390,6 +653,47 @@ def rss_servis_tara(hedef: dict, rss_url: str, limit: int = 4) -> list:
 # ----------------------------------------------------------------------
 # 6. [ Dynamic HTML Scraper ] (JSoup / Headless Worker / BS4)
 # ----------------------------------------------------------------------
+def haber_linki_gecerli_mi(tam_url: str, base_url: str) -> bool:
+    """Bir URL'nin menü/kurumsal sayfa değil, gerçek bir haber/duyuru detay linki olup olmadığını denetler."""
+    if not tam_url.startswith("http"):
+        return False
+
+    parsed_base = urlparse(base_url)
+    parsed_url = urlparse(tam_url)
+
+    # Farklı bir domaine giden dış linkleri (tccb.gov.tr, turkiye.gov.tr, sosyal medya vb.) ele
+    base_domain = parsed_base.netloc.lower().replace("www.", "")
+    url_domain = parsed_url.netloc.lower().replace("www.", "")
+    if base_domain not in url_domain and url_domain not in base_domain:
+        return False
+
+    path = parsed_url.path.strip("/")
+    if not path or len(path) < 5:
+        return False
+
+    low_path = path.lower()
+    if low_path.endswith((".pdf", ".doc", ".docx", ".xls", ".xlsx", ".zip", ".rar", ".jpg", ".png")):
+        return False
+
+    # Bilinen sabit kurumsal menü yollarını filtrele
+    son_parca = low_path.split("/")[-1]
+    if son_parca in ENGEL_LINK_KELIMELER or any(low_path == k.strip("/") for k in ENGEL_LINK_KELIMELER):
+        return False
+
+    # Haber linkleri genellikle ya '/icerik/', '/Haber/', '/TR-' içerir ya da tireli anlamlı bir slug'a sahiptir
+    if any(p in low_path for p in ["/icerik/", "/haber/", "/duyuru/", "tr-"]):
+        if any(k in low_path for k in ["kurumsal.html", "teskilat-semasi", "misyonumuz", "vizyonumuz", "yonetim.html", "il-saglik-muduru", "baskanlar.html", "iletisim.html", "mevzuat.html", "formlar.html", "gruplandirma.html", "mobil-bolgeler", "birimi.html", "baskanligi.html", "nobet-listesi", "eczaneler.html", "telefon-rehberi", "aile-hekimim", "bu-test-nerede", "bordro.html", "lbys.html", "zimmet-sorgulama", "bilgi-guvenligi", "arabuluculuk", "ic-kontrol", "etik-", "organizasyon-kitabi", "satinalma-duyurulari", "nasil-giderim", "randevu-sistemi", "laboratuvar-sonuclari", "rapor-sonuclari"]):
+            return False
+        return True
+
+    # Tire içeren ve en az 2 kelimeli slug yapısı (örn: valimiz-sayin-... veya adiyaman-belediyemiz-...)
+    if "-" in son_parca and len(son_parca) >= 12:
+        if any(son_parca.endswith(ek) for ek in ["-mudurlugu", "-kaymakami", "-komutanligi", "-baskanligi", "-birimi", "-komisyonu", "-standartlari", "-basvurusu", "-listesi", "-tarihcesi", "-valilerimiz"]):
+            return False
+        return True
+
+    return False
+
 def html_scraper_tara(hedef: dict, seciciler: dict, session: requests.Session, limit: int = 3) -> list:
     """[RSS Var mı? -> Hayır] Dynamic HTML Scraper: Detay tarama, medya ve içerik çıkarma."""
     haberler = []
@@ -402,64 +706,102 @@ def html_scraper_tara(hedef: dict, seciciler: dict, session: requests.Session, l
             if resp.status_code != 200:
                 return haberler
 
+        aktif_liste_url = resp.url or target_url
         soup = BeautifulSoup(resp.text, "html.parser")
         link_etiketleri = soup.select(seciciler.get("list_container", "a"))
 
-        detay_linkleri = []
+        detay_adaylari = []  # [(tam_url, liste_kapak_gorseli, kart_basligi)]
+        gorulen_linkler = set()
+
         for a in link_etiketleri:
-            href = a.get("href")
-            if not href or href.startswith("javascript") or href == "#":
+            href = (a.get("href") or "").strip()
+            if not href or href.startswith(("javascript", "mailto:", "tel:", "#")):
                 continue
-            tam_url = urljoin(hedef["base_url"], href)
-            
-            if tam_url.startswith("http") and tam_url not in detay_linkleri:
-                detay_linkleri.append(tam_url)
-            if len(detay_linkleri) >= limit:
+            tam_url = urljoin(aktif_liste_url, href)
+            if tam_url in gorulen_linkler:
+                continue
+            if not haber_linki_gecerli_mi(tam_url, aktif_liste_url):
+                continue
+
+            gorulen_linkler.add(tam_url)
+            liste_kapak = kart_kapak_gorseli_bul(a, aktif_liste_url)
+            kart_baslik = metin_temizle(a.get("title") or a.get_text(separator=" ", strip=True))
+            detay_adaylari.append((tam_url, liste_kapak, kart_baslik))
+            if len(detay_adaylari) >= limit * 2:
                 break
 
-        for detay_url in detay_linkleri:
+        # Eğer özel seçiciyle yeterli link bulunamadıysa tüm <a> etiketlerinden geçerli haber linklerini tara
+        if not detay_adaylari:
+            for a in soup.find_all("a", href=True):
+                href = a["href"].strip()
+                if not href or href.startswith(("javascript", "mailto:", "tel:", "#")):
+                    continue
+                tam_url = urljoin(aktif_liste_url, href)
+                if tam_url not in gorulen_linkler and haber_linki_gecerli_mi(tam_url, aktif_liste_url):
+                    gorulen_linkler.add(tam_url)
+                    liste_kapak = kart_kapak_gorseli_bul(a, aktif_liste_url)
+                    kart_baslik = metin_temizle(a.get("title") or a.get_text(separator=" ", strip=True))
+                    detay_adaylari.append((tam_url, liste_kapak, kart_baslik))
+                    if len(detay_adaylari) >= limit * 2:
+                        break
+
+        for detay_url, liste_kapak, kart_baslik in detay_adaylari:
+            if len(haberler) >= limit:
+                break
             try:
                 d_resp = session.get(detay_url, headers=DEFAULT_HEADERS, timeout=12, verify=False)
                 if d_resp.status_code != 200:
                     continue
+                gercek_detay_url = d_resp.url or detay_url
                 d_soup = BeautifulSoup(d_resp.text, "html.parser")
 
                 # Başlık
-                baslik_el = d_soup.select_one(seciciler.get("title", "h1"))
-                baslik = baslik_el.get_text(strip=True) if baslik_el else (d_soup.title.get_text(strip=True) if d_soup.title else "")
+                baslik = ""
+                baslik_el = d_soup.select_one(seciciler.get("title", "h1, h2.page-title, h2.main-title, h3.page-title, .page-content-header h5"))
+                if baslik_el:
+                    # ISAY h2.page-title içinde span varsa sadece span metnini al
+                    span_el = baslik_el.find("span")
+                    baslik = span_el.get_text(strip=True) if span_el else baslik_el.get_text(strip=True)
+                if not baslik and d_soup.title:
+                    baslik = d_soup.title.get_text(strip=True).split(" - ")[-1]
+                if not baslik and kart_baslik and kart_baslik.lower() != "devamını oku":
+                    baslik = kart_baslik
                 baslik = metin_temizle(baslik)
                 if not baslik:
                     continue
 
                 # İçerik
-                icerik_el = d_soup.select_one(seciciler.get("content", "article"))
-                icerik = icerik_el.get_text(separator=" ", strip=True) if icerik_el else ""
+                icerik = ""
+                icerik_el = d_soup.select_one(seciciler.get("content", "div.icerik, .article-detay, .itemBody, .page-content-body-hc, article"))
+                if icerik_el:
+                    icerik = icerik_el.get_text(separator=" ", strip=True)
                 if len(icerik) < 30:
                     paragraflar = [p.get_text(strip=True) for p in d_soup.find_all("p") if len(p.get_text(strip=True)) > 25]
                     icerik = " ".join(paragraflar)
                 icerik = metin_temizle(icerik)
                 if len(icerik) < 20:
-                    continue
+                    icerik = baslik
 
-                # Görseller
-                gorseller = []
-                for el in d_soup.select(seciciler.get("images", "img")):
-                    raw_src = el.get("href") if el.name == "a" else (el.get("data-src") or el.get("src"))
-                    if raw_src:
-                        g = gorsel_kalitesini_artir(raw_src, hedef["base_url"])
-                        if g:
-                            gorseller.append(g)
+                # Görseller (Detay sayfası + Galeri + Liste kartı kapağı)
+                temiz_gorseller = sayfa_gorsellerini_topla(d_soup, seciciler, gercek_detay_url, liste_kapak=liste_kapak)
 
-                # Video
+                # Video (Seçici + Genel HTML5/YouTube/Vimeo/MP4 tarayıcı)
                 video_url = None
                 if seciciler.get("video"):
-                    v_el = d_soup.select_one(seciciler["video"])
-                    if v_el:
-                        v_src = v_el.get("src") or v_el.get("href")
+                    for v_el in d_soup.select(seciciler["video"]):
+                        v_src = v_el.get("src") or v_el.get("data-src") or v_el.get("href")
                         if v_src:
-                            video_url = urljoin(hedef["base_url"], v_src)
+                            video_url = video_url_normallestir(v_src, gercek_detay_url)
+                            if video_url:
+                                break
                 if not video_url:
-                    video_url = video_ayikla(d_soup, hedef["base_url"])
+                    video_url = video_ayikla(d_soup, gercek_detay_url)
+
+                # Haberde fotoğraf yoksa ancak YouTube videosu varsa video kapağını görsel olarak ekle
+                if not temiz_gorseller and video_url:
+                    yt_kapak = youtube_kapak_resmi_uret(video_url)
+                    if yt_kapak:
+                        temiz_gorseller.append(yt_kapak)
 
                 # Tarih
                 tarih_metin = ""
@@ -468,9 +810,8 @@ def html_scraper_tara(hedef: dict, seciciler: dict, session: requests.Session, l
                     if t_el:
                         tarih_metin = metin_temizle(t_el.get_text(strip=True))
 
-                temiz_gorseller = list(dict.fromkeys(gorseller))[:10]
-                kapak_gorseli = temiz_gorseller[0] if temiz_gorseller else None
-                haber_id = id_uret(detay_url)
+                kapak_gorseli = temiz_gorseller[0] if temiz_gorseller else ""
+                haber_id = id_uret(gercek_detay_url)
 
                 # Kategori ve Kurum Analizi
                 kat_kod, kat_ad, nihai_kt, kt_ad = kategori_ve_kurum_belirle(baslik, icerik, hedef["kurum_tipi"])
@@ -489,9 +830,13 @@ def html_scraper_tara(hedef: dict, seciciler: dict, session: requests.Session, l
                     "kurumTipiAdi": kt_ad,
                     "kaynakMotor": "SCRAPER",
                     "gorselUrls": temiz_gorseller,
+                    "gorselUrl": kapak_gorseli,
                     "kapakGorseli": kapak_gorseli,
-                    "videoUrl": video_url,
-                    "kaynakUrl": detay_url,
+                    "resimUrl": kapak_gorseli,
+                    "videoUrl": video_url or "",
+                    "videoUrls": [video_url] if video_url else [],
+                    "medyaVarMi": bool(temiz_gorseller or video_url),
+                    "kaynakUrl": gercek_detay_url,
                     "yayinTarihiMetin": tarih_metin,
                     "kategori": kat_kod,
                     "kategoriAdi": kat_ad,
@@ -512,12 +857,12 @@ def html_scraper_tara(hedef: dict, seciciler: dict, session: requests.Session, l
 # ----------------------------------------------------------------------
 def kurum_tara_is(hedef: dict, varsayilan_seciciler: dict, limit: int = 3) -> list:
     """Tek bir resmi kurum için rapor akış mimarisini işletir."""
+    seciciler = hedef.get("seciciler") or varsayilan_seciciler
     with requests.Session() as session:
         has_rss, rss_url = rss_var_mi(hedef, session)
         if has_rss and rss_url:
-            haberler = rss_servis_tara(hedef, rss_url, limit=limit)
+            haberler = rss_servis_tara(hedef, rss_url, seciciler=seciciler, session=session, limit=limit)
         else:
-            seciciler = hedef.get("seciciler") or varsayilan_seciciler
             haberler = html_scraper_tara(hedef, seciciler, session, limit=limit)
     return haberler
 
