@@ -13,7 +13,7 @@
   "twitter_botu": {
     "bot_adi": "Novra Twitter Haber Botu",
     "aktif_mi": true,
-    "firebase_koleksiyon_adi": "twitter_haberleri",
+    "firebase_koleksiyon_adi": "haberler",
     "tarama_sikligi_dakika": 5,
     "otomatik_bildirim": true
   }

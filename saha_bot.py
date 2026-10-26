@@ -616,10 +616,14 @@ def rss_servis_tara(hedef: dict, rss_url: str, seciciler: dict = None, session: 
             # Kategori ve Kurum Analizi
             kat_kod, kat_ad, nihai_kt, kt_ad = kategori_ve_kurum_belirle(baslik, icerik_metin, hedef["kurum_tipi"])
 
+            ozet_kisa = icerik_metin[:240] + ("..." if len(icerik_metin) > 240 else "")
+            ana_medya_url = video_url or kapak_gorseli
+            medya_tipi = "VIDEO" if video_url else ("IMAGE" if kapak_gorseli else "NONE")
+
             haberler.append({
                 "id": haber_id,
                 "baslik": baslik,
-                "ozet": icerik_metin[:240] + ("..." if len(icerik_metin) > 240 else ""),
+                "ozet": ozet_kisa,
                 "icerik": icerik_metin[:5000],
                 "ilKodu": hedef["plaka"],
                 "ilAdi": hedef["il_adi"],
@@ -644,7 +648,22 @@ def rss_servis_tara(hedef: dict, rss_url: str, seciciler: dict = None, session: 
                 "aktifMi": True,
                 "onayDurumu": "YAYINDA",
                 "okunmaSayisi": 0,
-                "begeniSayisi": 0
+                "begeniSayisi": 0,
+                # Otonom Montaj (AutoPilot) & Çapraz Platform (Web + Android) Standart Alanları
+                "is_auto_montaged": False,
+                "il": hedef["il_adi"],
+                "ilce": hedef["ilce_adi"],
+                "city": hedef["il_adi"],
+                "district": hedef["ilce_adi"],
+                "title": baslik,
+                "description": icerik_metin[:5000],
+                "imageUrl": kapak_gorseli,
+                "gorsel_url": kapak_gorseli,
+                "mediaUrl": ana_medya_url or "",
+                "mediaType": medya_tipi,
+                "source": hedef["kurum_adi"],
+                "sourceName": hedef["kurum_adi"],
+                "sourceUrl": link
             })
     except Exception as e:
         print(f"[RSS MOTOR HATA] {hedef['kurum_adi']}: {e}")
@@ -816,10 +835,14 @@ def html_scraper_tara(hedef: dict, seciciler: dict, session: requests.Session, l
                 # Kategori ve Kurum Analizi
                 kat_kod, kat_ad, nihai_kt, kt_ad = kategori_ve_kurum_belirle(baslik, icerik, hedef["kurum_tipi"])
 
+                ozet_kisa = icerik[:240] + ("..." if len(icerik) > 240 else "")
+                ana_medya_url = video_url or kapak_gorseli
+                medya_tipi = "VIDEO" if video_url else ("IMAGE" if kapak_gorseli else "NONE")
+
                 haberler.append({
                     "id": haber_id,
                     "baslik": baslik,
-                    "ozet": icerik[:240] + ("..." if len(icerik) > 240 else ""),
+                    "ozet": ozet_kisa,
                     "icerik": icerik[:5000],
                     "ilKodu": hedef["plaka"],
                     "ilAdi": hedef["il_adi"],
@@ -844,7 +867,22 @@ def html_scraper_tara(hedef: dict, seciciler: dict, session: requests.Session, l
                     "aktifMi": True,
                     "onayDurumu": "YAYINDA",
                     "okunmaSayisi": 0,
-                    "begeniSayisi": 0
+                    "begeniSayisi": 0,
+                    # Otonom Montaj (AutoPilot) & Çapraz Platform (Web + Android) Standart Alanları
+                    "is_auto_montaged": False,
+                    "il": hedef["il_adi"],
+                    "ilce": hedef["ilce_adi"],
+                    "city": hedef["il_adi"],
+                    "district": hedef["ilce_adi"],
+                    "title": baslik,
+                    "description": icerik[:5000],
+                    "imageUrl": kapak_gorseli,
+                    "gorsel_url": kapak_gorseli,
+                    "mediaUrl": ana_medya_url or "",
+                    "mediaType": medya_tipi,
+                    "source": hedef["kurum_adi"],
+                    "sourceName": hedef["kurum_adi"],
+                    "sourceUrl": gercek_detay_url
                 })
             except Exception:
                 continue
@@ -1171,14 +1209,37 @@ def haberleri_kaydet(haberler: list, db_client, omur_gun: int = 2):
     for i in range(0, toplam, batch_boyutu):
         batch = db_client.batch()
         grup = haberler[i:i + batch_boyutu]
+        doc_refs = [col_ref.document(h["id"]) for h in grup]
+        mevcut_harita = {}
+        try:
+            for snap in db_client.get_all(doc_refs):
+                if snap.exists:
+                    mevcut_harita[snap.id] = snap.to_dict() or {}
+        except Exception:
+            pass
+
         for h in grup:
             doc_ref = col_ref.document(h["id"])
             h_firestore = dict(h)
-            # 2 Günlük TTL ve Zaman Etiketleri
-            h_firestore["olusturulmaTarihi"] = firestore.SERVER_TIMESTAMP
-            h_firestore["olusturulmaZamaniIso"] = su_an.isoformat()
-            h_firestore["silinmeTarihi"] = silinme_zamani
-            h_firestore["gecerlilikSuresiGun"] = omur_gun
+            mevcut_veri = mevcut_harita.get(h["id"])
+            if mevcut_veri is not None:
+                # Daha önce otonom montajlandıysa (is_auto_montaged == True) kesinlikle sıfırlama!
+                h_firestore["is_auto_montaged"] = bool(mevcut_veri.get("is_auto_montaged", False))
+                h_firestore["guncellenmeTarihi"] = firestore.SERVER_TIMESTAMP
+                if "olusturulmaTarihi" not in mevcut_veri:
+                    h_firestore["olusturulmaTarihi"] = firestore.SERVER_TIMESTAMP
+                if "createdAt" not in mevcut_veri:
+                    h_firestore["createdAt"] = firestore.SERVER_TIMESTAMP
+                if "silinmeTarihi" not in mevcut_veri:
+                    h_firestore["silinmeTarihi"] = silinme_zamani
+            else:
+                # Yeni haber dokümanı: AutoPilot kuyruğuna girmesi için is_auto_montaged = False
+                h_firestore["is_auto_montaged"] = False
+                h_firestore["olusturulmaTarihi"] = firestore.SERVER_TIMESTAMP
+                h_firestore["createdAt"] = firestore.SERVER_TIMESTAMP
+                h_firestore["olusturulmaZamaniIso"] = su_an.isoformat()
+                h_firestore["silinmeTarihi"] = silinme_zamani
+                h_firestore["gecerlilikSuresiGun"] = omur_gun
             batch.set(doc_ref, h_firestore, merge=True)
         batch.commit()
         print(f"[FIREBASE BATCH] {min(i + batch_boyutu, toplam)} / {toplam} haber kaydedildi.")
