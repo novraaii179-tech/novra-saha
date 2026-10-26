@@ -615,6 +615,7 @@ def rss_servis_tara(hedef: dict, rss_url: str, seciciler: dict = None, session: 
 
             # Kategori ve Kurum Analizi
             kat_kod, kat_ad, nihai_kt, kt_ad = kategori_ve_kurum_belirle(baslik, icerik_metin, hedef["kurum_tipi"])
+            nihai_ilce = akilli_ilce_belirle(hedef["il_adi"], hedef.get("ilce_adi", ""), baslik, icerik_metin, hedef.get("kurum_adi", ""))
 
             ozet_kisa = icerik_metin[:240] + ("..." if len(icerik_metin) > 240 else "")
             ana_medya_url = video_url or kapak_gorseli
@@ -627,7 +628,7 @@ def rss_servis_tara(hedef: dict, rss_url: str, seciciler: dict = None, session: 
                 "icerik": icerik_metin[:5000],
                 "ilKodu": hedef["plaka"],
                 "ilAdi": hedef["il_adi"],
-                "ilceAdi": hedef["ilce_adi"],
+                "ilceAdi": nihai_ilce,
                 "kurumId": hedef["kurum_id"],
                 "kurumAdi": hedef["kurum_adi"],
                 "kurumTipi": nihai_kt,
@@ -644,7 +645,7 @@ def rss_servis_tara(hedef: dict, rss_url: str, seciciler: dict = None, session: 
                 "yayinTarihiMetin": yayin_tarihi,
                 "kategori": kat_kod,
                 "kategoriAdi": kat_ad,
-                "etiketler": [hedef["il_adi"], hedef["ilce_adi"], kt_ad, kat_ad],
+                "etiketler": [hedef["il_adi"], nihai_ilce, kt_ad, kat_ad],
                 "aktifMi": True,
                 "onayDurumu": "YAYINDA",
                 "okunmaSayisi": 0,
@@ -652,9 +653,9 @@ def rss_servis_tara(hedef: dict, rss_url: str, seciciler: dict = None, session: 
                 # Otonom Montaj (AutoPilot) & Çapraz Platform (Web + Android) Standart Alanları
                 "is_auto_montaged": False,
                 "il": hedef["il_adi"],
-                "ilce": hedef["ilce_adi"],
+                "ilce": nihai_ilce,
                 "city": hedef["il_adi"],
-                "district": hedef["ilce_adi"],
+                "district": nihai_ilce,
                 "title": baslik,
                 "description": icerik_metin[:5000],
                 "imageUrl": kapak_gorseli,
@@ -834,6 +835,7 @@ def html_scraper_tara(hedef: dict, seciciler: dict, session: requests.Session, l
 
                 # Kategori ve Kurum Analizi
                 kat_kod, kat_ad, nihai_kt, kt_ad = kategori_ve_kurum_belirle(baslik, icerik, hedef["kurum_tipi"])
+                nihai_ilce = akilli_ilce_belirle(hedef["il_adi"], hedef.get("ilce_adi", ""), baslik, icerik, hedef.get("kurum_adi", ""))
 
                 ozet_kisa = icerik[:240] + ("..." if len(icerik) > 240 else "")
                 ana_medya_url = video_url or kapak_gorseli
@@ -846,7 +848,7 @@ def html_scraper_tara(hedef: dict, seciciler: dict, session: requests.Session, l
                     "icerik": icerik[:5000],
                     "ilKodu": hedef["plaka"],
                     "ilAdi": hedef["il_adi"],
-                    "ilceAdi": hedef["ilce_adi"],
+                    "ilceAdi": nihai_ilce,
                     "kurumId": hedef["kurum_id"],
                     "kurumAdi": hedef["kurum_adi"],
                     "kurumTipi": nihai_kt,
@@ -863,7 +865,7 @@ def html_scraper_tara(hedef: dict, seciciler: dict, session: requests.Session, l
                     "yayinTarihiMetin": tarih_metin,
                     "kategori": kat_kod,
                     "kategoriAdi": kat_ad,
-                    "etiketler": [hedef["il_adi"], hedef["ilce_adi"], kt_ad, kat_ad],
+                    "etiketler": [hedef["il_adi"], nihai_ilce, kt_ad, kat_ad],
                     "aktifMi": True,
                     "onayDurumu": "YAYINDA",
                     "okunmaSayisi": 0,
@@ -871,9 +873,9 @@ def html_scraper_tara(hedef: dict, seciciler: dict, session: requests.Session, l
                     # Otonom Montaj (AutoPilot) & Çapraz Platform (Web + Android) Standart Alanları
                     "is_auto_montaged": False,
                     "il": hedef["il_adi"],
-                    "ilce": hedef["ilce_adi"],
+                    "ilce": nihai_ilce,
                     "city": hedef["il_adi"],
-                    "district": hedef["ilce_adi"],
+                    "district": nihai_ilce,
                     "title": baslik,
                     "description": icerik[:5000],
                     "imageUrl": kapak_gorseli,
