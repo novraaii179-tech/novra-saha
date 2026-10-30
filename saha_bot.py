@@ -179,6 +179,55 @@ def kategori_ve_kurum_belirle(baslik: str, icerik: str, kurum_tipi: str) -> tupl
     return "GUNCEL", "Güncel ve Diğer", kurum_tipi, "Resmi Kamu Kurumu"
 
 # ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# 2.1 IL VE ILCE HARITASI & AKILLI ILCE TESPIT MOTORU
+# ----------------------------------------------------------------------
+IL_ILCE_HARITASI: dict[str, list[str]] = {
+    "Adıyaman": ["Kahta", "Besni", "Gölbaşı", "Gerger", "Sincik", "Çelikhan", "Tut", "Samsat"],
+    "İstanbul": ["Kadıköy", "Beşiktaş", "Şişli", "Üsküdar", "Bakırköy", "Sarıyer", "Fatih", "Beyoğlu", "Maltepe", "Pendik", "Kartal", "Ataşehir", "Beylikdüzü", "Esenyurt", "Bağcılar", "Ümraniye", "Zeytinburnu", "Küçükçekmece", "Başakşehir", "Tuzla", "Silivri", "Çatalca", "Büyükçekmece", "Avcılar", "Arnavutköy", "Sancaktepe", "Sultanbeyli"],
+    "Ankara": ["Çankaya", "Keçiören", "Yenimahalle", "Mamak", "Etimesgut", "Sincan", "Altındağ", "Pursaklar", "Polatlı", "Beypazarı", "Kızılcahamam"],
+    "İzmir": ["Konak", "Karşıyaka", "Bornova", "Çiğli", "Buca", "Gaziemir", "Urla", "Karabağlar", "Bayraklı", "Menemen", "Torbalı", "Çeşme", "Aliağa", "Bergama", "Seferihisar", "Selçuk"],
+    "Bursa": ["Nilüfer", "Osmangazi", "Yıldırım", "Mudanya", "Gemlik", "İnegöl", "Orhangazi", "Karacabey", "İznik"],
+    "Antalya": ["Muratpaşa", "Konyaaltı", "Kepez", "Alanya", "Manavgat", "Kaş", "Kemer", "Serik", "Kumluca", "Finike", "Gazipaşa"],
+    "Adana": ["Seyhan", "Çukurova", "Yüreğir", "Sarıçam", "Ceyhan", "Kozan"],
+    "Konya": ["Selçuklu", "Meram", "Karatay", "Ereğli", "Akşehir", "Beyşehir"],
+    "Gaziantep": ["Şahinbey", "Şehitkamil", "Nizip", "İslahiye"],
+    "Şanlıurfa": ["Haliliye", "Eyyübiye", "Karaköprü", "Siverek", "Viranşehir", "Birecik", "Suruç", "Ceylanpınar"],
+    "Muğla": ["Bodrum", "Fethiye", "Marmaris", "Menteşe", "Milas", "Datça"],
+    "Aydın": ["Efeler", "Kuşadası", "Didim", "Söke", "Nazilli"],
+    "Kocaeli": ["İzmit", "Gebze", "Darıca", "Körfez", "Gölcük"],
+    "Tekirdağ": ["Süleymanpaşa", "Çorlu", "Çerkezköy"],
+    "Balıkesir": ["Bandırma", "Edremit", "Ayvalık"],
+    "Mersin": ["Tarsus", "Anamur", "Silifke"],
+    "Hatay": ["İskenderun", "Antakya", "Dörtyol"],
+    "Diyarbakır": ["Bağlar", "Kayapınar", "Sur", "Ergani", "Bismil"],
+    "Trabzon": ["Ortahisar", "Akçaabat", "Yomra"],
+    "Samsun": ["İlkadım", "Atakum", "Bafra", "Çarşamba"],
+    "Manisa": ["Yunusemre", "Akhisar", "Turgutlu", "Salihli"],
+    "Mardin": ["Artuklu", "Kızıltepe", "Midyat", "Nusaybin"],
+    "Şırnak": ["Cizre", "Silopi"],
+    "Hakkari": ["Yüksekova"],
+    "Kahramanmaraş": ["Elbistan", "Afşin"]
+}
+
+def akilli_ilce_belirle(il_adi: str, mevcut_ilce: str, baslik: str, icerik: str, kurum_adi: str) -> str:
+    """Haber metninde veya kurum adında geçen ilçe ismini tespit ederek Merkez fallback yerine nokta atışı ilçe atar."""
+    if mevcut_ilce and mevcut_ilce != "Merkez":
+        return mevcut_ilce
+
+    ilceler = IL_ILCE_HARITASI.get(il_adi, [])
+    if not ilceler:
+        return mevcut_ilce or "Merkez"
+
+    birlesik_metin = f"{kurum_adi} {baslik} {icerik[:500]}".lower().translate(TURKCE_HARF_HARITASI)
+    for ilce in ilceler:
+        ilce_norm = ilce.lower().translate(TURKCE_HARF_HARITASI)
+        pattern = rf"\b{re.escape(ilce_norm)}(?:'[a-z]+|\s+kaymakamligi|\s+belediyesi|\s+ilcesi|\b)"
+        if re.search(pattern, birlesik_metin):
+            return ilce
+
+    return mevcut_ilce or "Merkez"
+
 # 3. MEDYA & METİN AYRIŞTIRMA (Gelişmiş Filtreleme & Kalite Motoru)
 # ----------------------------------------------------------------------
 ENGEL_GORSEL_KELIMELER = [
